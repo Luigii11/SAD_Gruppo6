@@ -2,7 +2,6 @@
 > *Your favourites vibes*
 
 VibeFlow è un'applicazione desktop per la gestione e la riproduzione di tracce musicali, sviluppata in **Java 23.0.2** con framework **JavaFX**.
-
 Il sistema consente la gestione completa della libreria musicale, la creazione di playlist manuali e automatiche, e il controllo della riproduzione con modalità sequenziale, shuffle e loop.
 
 ---
@@ -46,7 +45,7 @@ Università degli Studi di Salerno — DIEM
 
 ## Riferimenti
 
-Nella cartella `_references_` è presente il file `link.md` da cui accedere a:
+Nella cartella `references` è presente il file `links.md` da cui accedere a:
 
 1. 📋 Link Trello
 2. 📊 Foglio Excel contenente gli Artefatti
