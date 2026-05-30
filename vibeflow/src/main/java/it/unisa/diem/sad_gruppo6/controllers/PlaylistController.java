@@ -24,7 +24,7 @@ public class PlaylistController {
         // Controllo su nome
         if (name == null || name.trim().isEmpty()) {
             throw new IllegalArgumentException("Il nome della playlist non può essere vuoto.");
-
+        }
         Playlist newPlaylist = new Playlist(name, false);
         playlistLibrary.addPlaylist(newPlaylist);
     }
