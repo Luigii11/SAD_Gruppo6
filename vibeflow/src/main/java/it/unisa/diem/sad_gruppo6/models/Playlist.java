@@ -3,8 +3,6 @@ package it.unisa.diem.sad_gruppo6.models;
 import java.util.List;
 import java.util.ArrayList;
 
-//import java.it.unisa.diem.sad_gruppo6.models.Track
-
 public class Playlist {
     // Attributi
     private String name;
