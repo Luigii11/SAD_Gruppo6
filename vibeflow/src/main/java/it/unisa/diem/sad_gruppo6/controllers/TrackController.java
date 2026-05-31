@@ -6,13 +6,24 @@
  */
 
 package it.unisa.diem.sad_gruppo6.controllers;
+
 import it.unisa.diem.sad_gruppo6.models.*;
 import it.unisa.diem.sad_gruppo6.commands.*;
+import javafx.fxml.FXML;
+import javafx.scene.control.TextField;
+import javafx.scene.control.Label;
 
 public class TrackController 
 {
     private TrackLibrary library;
     private CommandManager commandManager;
+
+    @FXML private TextField titleField;
+    @FXML private TextField authorField;
+    @FXML private TextField durationField;
+    @FXML private TextField genreField;
+    @FXML private TextField yearField;
+    @FXML private Label feedbackLabel;
     /**
      * Costruttore del TrackController, inizializza la libreria delle tracce e il gestore dei comandi.
      * 
@@ -40,6 +51,28 @@ public class TrackController
         Track track = new Track(title, author, duration, genre, year);
         AddTrackToLibraryCommand command = new AddTrackToLibraryCommand(library, track);
         commandManager.execute(command);
+    }
+
+    @FXML
+    private void handleAddTrack() 
+    {
+        try {
+            createTrack(
+                titleField.getText(),
+                authorField.getText(),
+                Integer.parseInt(durationField.getText()),
+                genreField.getText(),
+                Integer.parseInt(yearField.getText())
+            );
+            feedbackLabel.setStyle("-fx-text-fill: green;");
+            feedbackLabel.setText("Traccia aggiunta!");
+        } catch (NumberFormatException e) {
+            feedbackLabel.setStyle("-fx-text-fill: red;");
+            feedbackLabel.setText("Durata e anno devono essere numeri.");
+        } catch (IllegalArgumentException e) {
+            feedbackLabel.setStyle("-fx-text-fill: red;");
+            feedbackLabel.setText(e.getMessage());
+        }
     }
 
 

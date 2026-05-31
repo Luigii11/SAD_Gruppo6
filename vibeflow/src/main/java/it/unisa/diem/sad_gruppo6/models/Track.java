@@ -32,10 +32,12 @@ public class Track
 
     public Track(String title, String author, int duration, String genre, int year) 
     {
-        this.title = title;
-        this.author = author;
-        this.genre = genre;
-        this.year = year;
+        setTitle(title);
+        setAuthor(author);
+        setDuration(duration);
+        setGenre(genre);
+        setYear(year);
+        this.playCount = 0;
     }
 
     // Getter e Setter
@@ -105,6 +107,15 @@ public class Track
     public int getDuration() 
     {
         return duration;
+    }
+
+    private void setDuration(int duration) 
+    {
+        if (duration <= 0) 
+        {
+            throw new IllegalArgumentException("La durata della traccia deve essere positiva.");
+        }
+        this.duration = duration;
     }
 
     public int getYear() 
