@@ -20,11 +20,17 @@ public class PlaylistController {
     }
 
     // Metodo per Creazione Playlist dall'utente
-    public void createPlaylist(String name) {
-        // Controllo su nome
+    public void createPlaylist(String name) throws IllegalArgumentException {
+        // Controllo su nome vuoto
         if (name == null || name.trim().isEmpty()) {
             throw new IllegalArgumentException("Il nome della playlist non può essere vuoto.");
         }
+
+        // Controllo su unicità nome
+        if (playlistLibrary.containsPlaylistName(name)) {
+            throw new IllegalArgumentException("Esiste già una playlist con questo nome.");
+        }
+
         Playlist newPlaylist = new Playlist(name, false);
         playlistLibrary.addPlaylist(newPlaylist);
     }
