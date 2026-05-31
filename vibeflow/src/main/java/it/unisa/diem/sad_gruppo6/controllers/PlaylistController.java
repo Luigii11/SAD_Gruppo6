@@ -92,10 +92,10 @@ public class PlaylistController {
     }
     */
 
-    /*
+    
     /**
      * Rimuove una traccia da una specifica playlist.
-     * * @param t La traccia da rimuovere.
+     * @param t La traccia da rimuovere.
      * @param p La playlist da cui rimuovere la traccia.
      */
     /*
