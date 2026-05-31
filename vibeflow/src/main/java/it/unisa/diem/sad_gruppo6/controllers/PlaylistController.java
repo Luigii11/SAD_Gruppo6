@@ -12,20 +12,26 @@ public class PlaylistController {
     private PlaylistLibrary playlistLibrary;
     //private CommandManager commandManager;
 
-    // Metodo Costruttore
+    /* Metodo Costruttore
     public PlaylistController (TrackLibrary trackLibrary, PlaylistLibrary playlistLibrary, CommandManager commandManager) {
-        //this.trackLibrary = trackLibrary;
+        this.trackLibrary = trackLibrary;
         this.playlistLibrary = playlistLibrary;
-        //this.commandManager = commandManager;
-    }
+        this.commandManager = commandManager;
+    }*/
 
     // Metodo per Creazione Playlist dall'utente
-    public void createPlaylist(String name) {
-        // Controllo su nome
+    public void createPlaylist(String name) throws IllegalArgumentException {
+        // Controllo su nome vuoto
         if (name == null || name.trim().isEmpty()) {
             throw new IllegalArgumentException("Il nome della playlist non può essere vuoto.");
         }
-        Playlist newPlaylist = new Playlist(name, false);
+
+        // Controllo su unicità nome
+        if (playlistLibrary.containsPlaylistName(name)) {
+            throw new IllegalArgumentException("Esiste già una playlist con questo nome.");
+        }
+
+        Playlist newPlaylist = new Playlist(name.trim(), false);
         playlistLibrary.addPlaylist(newPlaylist);
     }
 

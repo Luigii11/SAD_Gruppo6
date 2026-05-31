@@ -33,7 +33,16 @@ public class PlaylistLibrary {
     public List<Playlist> getPlaylists() {
         return playlists;
     }
-
+    
+    // Controlla se esiste una playlist con questo nome
+    public boolean containsPlaylistName(String name) {
+        for (Playlist p : playlists) {
+            if (p.getName().equalsIgnoreCase(name.trim()))
+                return true;
+        }
+        return false;
+    } 
+    
     // Gestione Observer
     public void registerObserver(PlaylistLibraryObserver o) {
         observers.add(o);
