@@ -3,6 +3,7 @@
  * Classe di definizione di un oggetto di tipo 'TrackLibrary', collezione di oggetti di tipo 'Track'.
  * 
  * @author EmanuelChirico
+ * @author EmanuelaGraziuso
  */
 
 package it.unisa.diem.sad_gruppo6.models;
@@ -50,6 +51,7 @@ public class TrackLibrary
     {
         tracks.add(track); 
         notifyTrackAdded(track);
+        notifyObserver();
     }
 
      /**
@@ -65,6 +67,51 @@ public class TrackLibrary
         }
     }
 
+    /**
+     * Restituisce la lista di tutte le tracce presenti nella libreria.
+
+    * @return Lista tracce presenti nella libreria.
+     */
+
+    public List<Track> getTracks() 
+    {
+        return new ArrayList<>(tracks);
+    }
+
+    /**
+     * Registra un nuovo observer che verrà notificato ad ogni modifica della libreria
+     * 
+     * @param o: L'observer da registrare.
+     */
+    public void registerObserver(TrackLibraryObserver o)
+    {
+        if(o!= null && !observers.contains(o)){
+            observers.add(o);
+        }
+    }
+
+    /**
+     * Rimuove un observer precedentemente registrato.
+     * 
+     * @param o: L'observer da rimuovere.
+     */
+    public void removeObserver(TrackLibraryObserver o)
+    {
+        observers.remove(o);
+    }
+
+    /**
+     * Notifica a tutti gli observer registrati che la libreria è stata modificata, in modo che possano 
+     * aggiornare le loro viste di conseguenza.
+     * 
+     */
+    private void notifyObserver()
+    {
+    for (TrackLibraryObserver observer : observers) 
+            {
+                observer.onLibraryChanged();
+            }
+    }
     /**
      * Aggiorna i metadati di una traccia esistente sostituendo {@code oldTrack}
      * con {@code updatedTrack}, preservando l'ordine di inserimento.
@@ -87,7 +134,7 @@ public class TrackLibrary
             rebuilt.add(t.equals(oldTrack) ? updatedTrack : t);
         }
         tracks = rebuilt;
-        notifyTrackAdded(updatedTrack); // riuso il notifier esistente per notificare la UI
+        notifyTrackAdded(updatedTrack); 
     }
 
 }

@@ -8,10 +8,19 @@
 package it.unisa.diem.sad_gruppo6.controllers;
 
 import it.unisa.diem.sad_gruppo6.models.*;
+
+import java.io.IOException;
+
 import it.unisa.diem.sad_gruppo6.commands.*;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.control.TextField;
+import javafx.stage.Stage;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Label;
+import javafx.scene.Node;
 
 public class TrackController 
 {
@@ -99,7 +108,7 @@ public class TrackController
     public void editTrack(Track target, String title, String author, int duration, String genre, int year)
     {
         Track updatedTrack = new Track(title, author, duration, genre, year);
-        EditTrackCommand command = new EditTrackCommand(library, target, updatedTrack);
+        EditTrackCommand command = new EditTrackCommand(target, updatedTrack);
         commandManager.execute(command);
     }
 
@@ -136,34 +145,60 @@ public class TrackController
      *       le modifiche (acceptance criteria 5).</li>
      * </ol>
      */
-@FXML
-private void handleEditTrack()
-{
-    if (trackToEdit == null) return;
+    @FXML
+    private void handleEditTrack()
+    {
+        if (trackToEdit == null) return;
 
-    try
-    {
-        editTrack(
-            trackToEdit,
-            titleField.getText(),
-            authorField.getText(),
-            Integer.parseInt(durationField.getText()),
-            genreField.getText(),
-            Integer.parseInt(yearField.getText())
-        );
-        feedbackLabel.setStyle("-fx-text-fill: green;");
-        feedbackLabel.setText("Traccia modificata con successo!");
+        try
+        {
+            editTrack(
+                trackToEdit,
+                titleField.getText(),
+                authorField.getText(),
+                Integer.parseInt(durationField.getText()),
+                genreField.getText(),
+                Integer.parseInt(yearField.getText())
+            );
+            feedbackLabel.setStyle("-fx-text-fill: green;");
+            feedbackLabel.setText("Traccia modificata con successo!");
+        }
+        catch (NumberFormatException e)
+        {
+            feedbackLabel.setStyle("-fx-text-fill: red;");
+            feedbackLabel.setText("Durata e anno devono essere numeri.");
+        }
+        catch (IllegalArgumentException e)
+        {
+            feedbackLabel.setStyle("-fx-text-fill: red;");
+            feedbackLabel.setText(e.getMessage());
+        }
     }
-    catch (NumberFormatException e)
+
+    /**
+     * Gestisce il click sul pulsante "Annulla": torna alla vista della libreria
+     * senza applicare modifiche.
+     *
+     * @param event l'evento di azione generato dal click sul pulsante.
+     */
+    @FXML
+    private void handleBack(ActionEvent event)
     {
-        feedbackLabel.setStyle("-fx-text-fill: red;");
-        feedbackLabel.setText("Durata e anno devono essere numeri.");
+        try
+        {
+            FXMLLoader loader = new FXMLLoader(
+                getClass().getResource("/it/unisa/diem/sad_gruppo6/views/TrackLibraryView.fxml")
+            );
+            Parent root = loader.load();
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.show();
+        }
+        catch (IOException e)
+        {
+            feedbackLabel.setStyle("-fx-text-fill: red;");
+            feedbackLabel.setText("Errore nel tornare alla libreria.");
+        }
     }
-    catch (IllegalArgumentException e)
-    {
-        feedbackLabel.setStyle("-fx-text-fill: red;");
-        feedbackLabel.setText(e.getMessage());
-    }
-}
 
 }
