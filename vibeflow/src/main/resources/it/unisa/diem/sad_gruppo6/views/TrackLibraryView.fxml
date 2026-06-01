@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.control.Button?>
+
+<!--
+    TrackLibraryView.fxml
+    Vista "All Tracks" — ID_4: Visualizza Libreria Track.
+    Mostra l'elenco completo delle tracce presenti nella TrackLibrary.
+    Se la libreria è vuota, viene mostrato un messaggio informativo.
+    Controller: TrackLibraryViewController
+-->
+<VBox spacing="12.0"
+      xmlns="http://javafx.com/javafx/23.0.1"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="it.unisa.diem.sad_gruppo6.controllers.TrackLibraryViewController">
+
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20"/>
+    </padding>
+
+    <Label text="All Tracks" style="-fx-font-size: 22px; -fx-font-weight: bold;"/>
+
+
+    <HBox spacing="0.0" style="-fx-background-color: #f4f4f4; -fx-padding: 8 16 8 16; -fx-border-color: #cccccc; -fx-border-width: 0 0 1 0;">
+        <Label text="Titolo"  style="-fx-font-weight: bold; -fx-text-fill: #444444;" prefWidth="200" minWidth="200" maxWidth="200"/>
+        <Label text="Genere"  style="-fx-font-weight: bold; -fx-text-fill: #444444;" prefWidth="160" minWidth="160" maxWidth="160"/>
+        <Label text="Autore"  style="-fx-font-weight: bold; -fx-text-fill: #444444;" prefWidth="160" minWidth="160" maxWidth="160"/>
+        <Label text="Durata"  style="-fx-font-weight: bold; -fx-text-fill: #444444;" prefWidth="80"  minWidth="80"  maxWidth="80"/>
+    </HBox>
+
+    <Label fx:id="emptyLabel"
+           text="Nessuna traccia trovata. Aggiungine una nuova."
+           style="-fx-text-fill: gray; -fx-font-size: 14px;"
+           visible="true"/>
+
+
+    <ListView fx:id="trackListView" VBox.vgrow="ALWAYS" style="-fx-hbar-policy: never;"/>
+
+    <HBox alignment="BOTTOM_RIGHT" VBox.vgrow="NEVER">
+        <Button fx:id="addTrackButton"
+                mnemonicParsing="false"
+                onAction="#handleAddTrack"
+                style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-background-radius: 20; -fx-padding: 5 15 5 15;"
+                text="+"/>
+    </HBox>
+
+</VBox>
