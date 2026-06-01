@@ -8,12 +8,13 @@
  * @pattern Observer
  * @pattern State (contesto)
  *
- * @author EmanuelChirico
+ * @author EmanuelChirico, LuigiAutorino
  */
 
 package it.unisa.diem.sad_gruppo6.playback;
 import it.unisa.diem.sad_gruppo6.playback.states.PlayerState;
 import it.unisa.diem.sad_gruppo6.playback.states.PausedState;
+import it.unisa.diem.sad_gruppo6.models.PlaylistIterator;
 import it.unisa.diem.sad_gruppo6.models.Track;
 import it.unisa.diem.sad_gruppo6.models.Playlist;
 import java.util.List;
@@ -27,6 +28,8 @@ public class PlaybackState {
     private Playlist currentPlaylist;
     private PlayerState currentState;
     private List<PlaybackObserver> observers;
+    private int currentPosition;
+    private PlaylistIterator iterator;
 
     /**
      * Pattern Singleton che impedisce l'istanziazione dall'esterno.
@@ -114,6 +117,50 @@ public class PlaybackState {
      */
     public String getStatusName() {
         return currentState.getStatusName();
+    }
+
+    /**
+     * Esegue l'azione di skip in avanti delegandola allo stato corrente.
+     */
+    public void next() {
+        currentState.next(this);
+    }
+
+    /**
+     * Esegue l'azione di skip all'indietro delegandola allo stato corrente.
+     */
+    public void previous() {
+        currentState.previous(this);
+    }
+
+    /**
+     * Restituisce la posizione attuale di riproduzione in secondi.
+     */
+    public int getCurrentPosition() {
+        return currentPosition;
+    }
+
+    /**
+     * Imposta il tempo di riproduzione e notifica l'interfaccia.
+     * @param position I secondi a cui posizionare la traccia.
+     */
+    public void seekTo(int position) {
+        this.currentPosition = position;
+        notifyObservers();
+    }
+
+    /**
+     * Restituisce l'iteratore corrente per navigare la playlist.
+     */
+    public PlaylistIterator getIterator() {
+        return iterator;
+    }
+    
+    /**
+     * Imposta l'iteratore per la modalità di riproduzione corrente.
+     */
+    public void setIterator(PlaylistIterator iterator) {
+        this.iterator = iterator;
     }
 
     /**

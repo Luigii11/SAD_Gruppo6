@@ -6,7 +6,7 @@
  * 
  * @see PlaybackState, PlaybackService
  *
- * @author EmanuelChirico
+ * @author EmanuelChirico, LuigiAutorino
  */
 package it.unisa.diem.sad_gruppo6.controllers;
 
@@ -18,7 +18,7 @@ import it.unisa.diem.sad_gruppo6.playback.states.PlayingState;
 
 public class PlaybackController {
 
-    
+    // Attributi
     private PlaybackState playbackState;
     private PlaybackService playbackService;
 
@@ -91,4 +91,25 @@ public class PlaybackController {
         playbackState.pause();
         playbackService.stop();
     }
+
+    /**
+     * Invoca l'avanzamento alla traccia successiva delegando l'azione
+     * al metodo next() di PlaybackState (che userà lo stato corrente).
+     */
+    public void next() {
+        if (playbackState != null) {
+            playbackState.next(); 
+        }
+    }
+
+    /**
+     * Invoca il ritorno alla traccia precedente delegando l'azione
+     * al metodo previous() di PlaybackState (che userà lo stato corrente).
+     */
+    public void previous() {
+        if (playbackState != null) {
+            playbackState.previous();
+        }
+    }
+
 }

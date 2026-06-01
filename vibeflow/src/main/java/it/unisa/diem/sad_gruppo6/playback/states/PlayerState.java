@@ -1,10 +1,11 @@
 /**
+ * @file PlayerState.java
  * Interfaccia che definisce i metodi per le azioni di play e pause, next e 
  * previous e per ottenere il nome dello stato attuale del player.
  * 
  * @pattern State
  * 
- * @author EmanuelChirico
+ * @author EmanuelChirico, LuigiAutorino
  */
 
 package it.unisa.diem.sad_gruppo6.playback.states;
@@ -37,5 +38,17 @@ public interface PlayerState
     
     void pause(PlaybackState ctx); 
 
-    
+    /**
+     * Gestisce la richiesta di avanzamento alla traccia successiva (Next).
+     * @param ctx Il contesto del PlaybackState contenente le informazioni globali.
+     */
+    void next(PlaybackState ctx);
+
+    /**
+     * Gestisce la richiesta di ritorno alla traccia precedente (Previous).
+     * Implementa la regola di business sul minutaggio (es. 10 secondi).
+     * @param ctx Il contesto del PlaybackState contenente le informazioni globali.
+     */
+    void previous(PlaybackState ctx);
 }
+
