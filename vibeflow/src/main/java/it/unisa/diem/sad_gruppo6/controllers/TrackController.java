@@ -201,4 +201,23 @@ public class TrackController
         }
     }
 
+    /**
+     * Rimuove una traccia dalla libreria delegando l'operazione al
+     * {@link CommandManager} tramite {@link RemoveTrackFromLibraryCommand}.
+     *
+     * <p>La validazione (traccia non null e presente in libreria) avviene
+     * all'interno di {@link TrackLibrary#removeTrack(Track)}: se non supera
+     * il controllo viene sollevata {@link IllegalArgumentException} prima
+     * che il comando venga registrato nella history, lasciando la libreria
+     * invariata.</p>
+     *
+     * @param track la traccia da rimuovere dalla libreria.
+     * @throws IllegalArgumentException se la traccia è null o non presente in libreria.
+     */
+    public void deleteTrack(Track track)
+    {
+        RemoveTrackFromLibraryCommand command = new RemoveTrackFromLibraryCommand(track);
+        commandManager.execute(command);
+    }
+
 }
