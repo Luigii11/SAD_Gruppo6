@@ -30,6 +30,8 @@ public class TrackController
     @FXML private TextField genreField;
     @FXML private TextField yearField;
     @FXML private Label feedbackLabel;
+    @FXML private Track trackToEdit; 
+
     /**
      * Costruttore del TrackController, inizializza la libreria delle tracce e il gestore dei comandi.
      * 
@@ -92,6 +94,93 @@ public class TrackController
         }
     }
 
+    /**
+     * Modifica i metadati di una traccia esistente nella libreria.
+     * Crea un nuovo oggetto {@link Track} con i dati aggiornati e delega
+     * l'operazione al CommandManager tramite {@link EditTrackCommand}.
+     *
+     * <p>La validazione degli input avviene implicitamente nel costruttore
+     * di {@link Track}: se un parametro non è valido viene sollevata
+     * {@link IllegalArgumentException} prima che il comando venga eseguito,
+     * lasciando la libreria invariata.</p>
+     *
+     * @param target   la traccia originale presente in libreria da modificare.
+     * @param title    il nuovo titolo.
+     * @param author   il nuovo autore.
+     * @param duration la nuova durata in secondi.         
+     * @param genre    il nuovo genere musicale.
+     * @param year     il nuovo anno di pubblicazione.
+     * @throws IllegalArgumentException se uno dei parametri non supera la validazione definita nei setter di {@link Track}.
+     */
+        
+    public void editTrack(Track target, String title, String author, int duration, String genre, int year)
+    {
+        Track updatedTrack = new Track(title, author, duration, genre, year);
+        EditTrackCommand command = new EditTrackCommand(library, target, updatedTrack);
+        commandManager.execute(command);
+    }
 
+    /**
+     * Pre-popola i campi del form con i metadati della traccia selezionata,
+     * preparando la vista per la modalità di modifica.
+     * Deve essere invocato dalla vista prima che il form venga mostrato all'utente
+     * (acceptance criteria 2: "il form si popola con i dati esistenti per quella traccia").
+     *
+     * @param track la traccia selezionata dalla libreria da modificare.
+     */
+    public void setTrackToEdit(Track track)
+    {
+        this.trackToEdit = track;
+        titleField.setText(track.getTitle());
+        authorField.setText(track.getAuthor());
+        durationField.setText(String.valueOf(track.getDuration()));
+        genreField.setText(track.getGenre());
+        yearField.setText(String.valueOf(track.getYear()));
+    }   
+
+    /**
+     * Gestisce l'evento di click sul pulsante "Save" del form di modifica.
+     * Legge i nuovi valori dai campi FXML e tenta la modifica della traccia
+     * correntemente selezionata ({@code trackToEdit}).
+     *
+     * <p>Flusso (acceptance criteria ID_2):</p>
+     * <ol>
+     *   <li>Il form è già pre-popolato grazie a {@link #setTrackToEdit(Track)}.</li>
+     *   <li>L'utente modifica i campi e preme "Save".</li>
+     *   <li>Se la modifica non è valida, viene mostrato un messaggio di errore
+     *       e la libreria rimane invariata (acceptance criteria 4).</li>
+     *   <li>Se la modifica è corretta, la traccia nella libreria riflette
+     *       le modifiche (acceptance criteria 5).</li>
+     * </ol>
+     */
+@FXML
+private void handleEditTrack()
+{
+    if (trackToEdit == null) return;
+
+    try
+    {
+        editTrack(
+            trackToEdit,
+            titleField.getText(),
+            authorField.getText(),
+            Integer.parseInt(durationField.getText()),
+            genreField.getText(),
+            Integer.parseInt(yearField.getText())
+        );
+        feedbackLabel.setStyle("-fx-text-fill: green;");
+        feedbackLabel.setText("Traccia modificata con successo!");
+    }
+    catch (NumberFormatException e)
+    {
+        feedbackLabel.setStyle("-fx-text-fill: red;");
+        feedbackLabel.setText("Durata e anno devono essere numeri.");
+    }
+    catch (IllegalArgumentException e)
+    {
+        feedbackLabel.setStyle("-fx-text-fill: red;");
+        feedbackLabel.setText(e.getMessage());
+    }
+}
 
 }
