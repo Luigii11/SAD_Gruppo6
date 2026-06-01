@@ -19,6 +19,7 @@ import javafx.stage.Stage;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.Node;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
@@ -38,7 +39,8 @@ public class TrackLibraryViewController implements Initializable, TrackLibraryOb
     private static final double DURATION = 80;
 
     private TrackLibrary library;
-
+    private final TrackController trackController = new TrackController();
+    
     @FXML private ListView<Track> trackListView;
     @FXML private Label emptyLabel;
     @FXML private Button addTrackButton;
@@ -76,7 +78,8 @@ public class TrackLibraryViewController implements Initializable, TrackLibraryOb
                 private final Label lblAuthor = makeCellLabel(AUTHOR);
                 private final Label lblDuration = makeCellLabel(DURATION);
                 private final Button btnEdit = new Button("✏");
-                private final HBox content = new HBox(lblTitle, lblGenre, lblAuthor, lblDuration, btnEdit);
+                private final Button btnDelete = new Button("🗑");
+                private final HBox content = new HBox(lblTitle, lblGenre, lblAuthor, lblDuration, btnEdit, btnDelete);
 
                 {
                     setStyle("-fx-padding: 6 16 6 16;");
@@ -84,10 +87,19 @@ public class TrackLibraryViewController implements Initializable, TrackLibraryOb
                     HBox.setHgrow(lblTitle, javafx.scene.layout.Priority.NEVER);
 
                     btnEdit.setStyle("-fx-background-color: transparent; -fx-cursor: hand; -fx-font-size: 13px;");
-                    btnEdit.setOnAction(event -> {
+                    btnDelete.setStyle("-fx-background-color: transparent; -fx-cursor: hand; -fx-font-size: 13px;");
+                    
+                    btnEdit.setOnAction(event -> {  //modifica traccia
                         Track track = getItem();
                         if (track != null) {
                             handleEditButtonClick(track, event);
+                        }
+                    });
+
+                    btnDelete.setOnAction(event -> { //rimuovi traccia
+                        Track track = getItem();
+                        if (track != null) {
+                            handleDeleteButtonClick(track, event);
                         }
                     });
                 }
@@ -196,5 +208,26 @@ public class TrackLibraryViewController implements Initializable, TrackLibraryOb
                 System.err.println("Errore nel caricamento di editTrack.fxml: " + e.getMessage());
                 e.printStackTrace();
             }
+        }
+
+        /**
+         * Gestisce il click sul pulsante cestino di una riga della lista.
+         * Mostra un {@link javafx.scene.control.Alert} di conferma prima di procedere
+         * con la rimozione, in coerenza con il comportamento standardizzato dell'applicativo
+         * per le operazioni distruttive.
+         *
+         * @param track la traccia selezionata da rimuovere dalla libreria.
+         */
+        private void handleDeleteButtonClick(Track track, javafx.event.ActionEvent event) {
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+            alert.setTitle("Conferma Rimozione");
+            alert.setHeaderText("Sei sicuro di voler rimuovere questa traccia?");
+            alert.setContentText(String.format("%s - %s", track.getTitle(), track.getAuthor()));
+
+            alert.showAndWait().ifPresent(response -> {
+                if (response == javafx.scene.control.ButtonType.OK) {
+                    new RemoveTrackFromLibraryCommand(track).execute();
+                }
+            });
         }
 }
