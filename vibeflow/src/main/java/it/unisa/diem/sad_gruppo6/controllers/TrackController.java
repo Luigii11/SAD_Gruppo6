@@ -10,8 +10,14 @@ package it.unisa.diem.sad_gruppo6.controllers;
 import it.unisa.diem.sad_gruppo6.models.*;
 import it.unisa.diem.sad_gruppo6.commands.*;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.control.TextField;
+import javafx.stage.Stage;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Label;
+
+import java.io.IOException;
 
 public class TrackController 
 {
@@ -64,14 +70,25 @@ public class TrackController
                 genreField.getText(),
                 Integer.parseInt(yearField.getText())
             );
-            feedbackLabel.setStyle("-fx-text-fill: green;");
-            feedbackLabel.setText("Traccia aggiunta!");
+            //feedbackLabel.setStyle("-fx-text-fill: green;");
+           // feedbackLabel.setText("Traccia aggiunta!");
+
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/it/unisa/diem/sad_gruppo6/views/TrackLibraryView.fxml"));
+            Parent root = loader.load();
+            Stage stage = (Stage) titleField.getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.show();
+
         } catch (NumberFormatException e) {
             feedbackLabel.setStyle("-fx-text-fill: red;");
             feedbackLabel.setText("Durata e anno devono essere numeri.");
         } catch (IllegalArgumentException e) {
             feedbackLabel.setStyle("-fx-text-fill: red;");
             feedbackLabel.setText(e.getMessage());
+        } catch (IOException e) { 
+            feedbackLabel.setStyle("-fx-text-fill: red;");
+            feedbackLabel.setText("Errore nel caricamento della libreria.");
+            System.err.println("Errore nel tornare alla vista TrackLibraryView: " + e.getMessage());
         }
     }
 
