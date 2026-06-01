@@ -8,7 +8,7 @@
  */
 
 package it.unisa.diem.sad_gruppo6.controllers;
-
+import it.unisa.diem.sad_gruppo6.commands.RemoveTrackFromLibraryCommand;
 import it.unisa.diem.sad_gruppo6.models.*;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
