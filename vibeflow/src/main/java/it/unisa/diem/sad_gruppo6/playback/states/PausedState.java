@@ -34,7 +34,7 @@ public class PausedState implements PlayerState
     @Override
     public void play(PlaybackState ctx) 
     {
-        ctx.changeState(new PausedState());
+        ctx.changeState(new PlayingState());
     }
 
     /**
