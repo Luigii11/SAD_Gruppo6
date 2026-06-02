@@ -1,8 +1,10 @@
 package it.unisa.diem.sad_gruppo6.controllers;
 
 import static org.junit.jupiter.api.Assertions.*;
-import it.unisa.diem.sad_gruppo6.models.Track;
+
 import org.junit.jupiter.api.Test;
+
+import it.unisa.diem.sad_gruppo6.model.domain.Track;
 
 public class TrackTest {
 

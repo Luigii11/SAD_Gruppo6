@@ -12,9 +12,10 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import it.unisa.diem.sad_gruppo6.models.PlaylistLibrary;
-import it.unisa.diem.sad_gruppo6.models.TrackLibrary;
-import it.unisa.diem.sad_gruppo6.commands.CommandManager;
+import it.unisa.diem.sad_gruppo6.controller.business.playlist.PlaylistController;
+import it.unisa.diem.sad_gruppo6.model.command.CommandManager;
+import it.unisa.diem.sad_gruppo6.model.library.PlaylistLibrary;
+import it.unisa.diem.sad_gruppo6.model.library.TrackLibrary;
 
 public class PlaylistControllerTest {
 
