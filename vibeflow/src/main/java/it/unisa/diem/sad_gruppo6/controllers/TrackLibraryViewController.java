@@ -76,18 +76,24 @@ public class TrackLibraryViewController implements Initializable, TrackLibraryOb
                 private final Label lblGenre = makeCellLabel(GENRE);
                 private final Label lblAuthor = makeCellLabel(AUTHOR);
                 private final Label lblDuration = makeCellLabel(DURATION);
-                private final Button btnEdit = new Button("✏");
+                private final Button btnEdit = new Button("✏️");
                 private final Button btnDelete = new Button("🗑");
-                private final HBox content = new HBox(lblTitle, lblGenre, lblAuthor, lblDuration, btnEdit, btnDelete);
-
+                private final HBox content = new HBox(8, lblTitle, lblGenre, lblAuthor, lblDuration, btnEdit, btnDelete);
                 {
                     setStyle("-fx-padding: 6 16 6 16;");
                     setText(null);
                     HBox.setHgrow(lblTitle, javafx.scene.layout.Priority.NEVER);
 
-                    btnEdit.setStyle("-fx-background-color: transparent; -fx-cursor: hand; -fx-font-size: 13px;");
-                    btnDelete.setStyle("-fx-background-color: transparent; -fx-cursor: hand; -fx-font-size: 13px;");
+                    // 2. Sistema le dimensioni del font e i padding per non farle tagliare
+                    btnEdit.setStyle("-fx-background-color: transparent; -fx-cursor: hand; -fx-font-size: 14px; -fx-padding: 2 4 2 4;");
+                    btnDelete.setStyle("-fx-background-color: transparent; -fx-cursor: hand; -fx-font-size: 14px; -fx-padding: 2 4 2 4;");
+
+                    // Effetto feedback al passaggio del mouse
+                    btnEdit.setOnMouseEntered(e -> btnEdit.setStyle("-fx-background-color: #e0e0e0; -fx-cursor: hand; -fx-font-size: 14px; -fx-padding: 2 4 2 4; -fx-background-radius: 4;"));
+                    btnEdit.setOnMouseExited(e -> btnEdit.setStyle("-fx-background-color: transparent; -fx-cursor: hand; -fx-font-size: 14px; -fx-padding: 2 4 2 4;"));
                     
+                    btnDelete.setOnMouseEntered(e -> btnDelete.setStyle("-fx-background-color: #ffebee; -fx-cursor: hand; -fx-font-size: 14px; -fx-padding: 2 4 2 4; -fx-background-radius: 4;"));
+                    btnDelete.setOnMouseExited(e -> btnDelete.setStyle("-fx-background-color: transparent; -fx-cursor: hand; -fx-font-size: 14px; -fx-padding: 2 4 2 4;"));
                     btnEdit.setOnAction(event -> {  //modifica traccia
                         Track track = getItem();
                         if (track != null) {
