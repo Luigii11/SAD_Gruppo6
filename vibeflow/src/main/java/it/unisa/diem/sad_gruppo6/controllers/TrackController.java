@@ -137,4 +137,24 @@ public class TrackController
             feedbackLabel.setText("Errore nel tornare alla libreria.");
         }
     }
+
+    /**
+     * Rimuove una traccia dalla lista globale della libreria.
+     *
+     * @param track la traccia da rimuovere dalla libreria generale.
+     * @throws IllegalArgumentException se la traccia è null o non presente in libreria.
+     */
+    public void deleteTrack(Track track) {
+        if (track == null) {
+            throw new IllegalArgumentException("Impossibile rimuovere una traccia null.");
+        }
+        if (!library.getTracks().contains(track)) {
+            throw new IllegalArgumentException("La traccia da rimuovere non è presente in libreria.");
+        }
+
+        // Incapsula l'azione nel comando richiesto dal task
+        RemoveTrackFromLibraryCommand command = new RemoveTrackFromLibraryCommand(track);
+        commandManager.execute(command);
+    }
+
 }
