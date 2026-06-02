@@ -9,8 +9,11 @@
 
 package it.unisa.diem.sad_gruppo6.controllers;
 
+import it.unisa.diem.sad_gruppo6.commands.AddTrackToPlaylistCommand;
 import it.unisa.diem.sad_gruppo6.commands.RemoveTrackFromLibraryCommand;
 import it.unisa.diem.sad_gruppo6.models.*;
+import it.unisa.diem.sad_gruppo6.controllers.PlaylistController;
+import it.unisa.diem.sad_gruppo6.controllers.PlaylistDetailsController;
 import it.unisa.diem.sad_gruppo6.App;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
@@ -26,6 +29,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 
+
 public class TrackLibraryViewController implements Initializable, TrackLibraryObserver {
 
     private static final double TITLE = 200;
@@ -35,6 +39,10 @@ public class TrackLibraryViewController implements Initializable, TrackLibraryOb
 
     private TrackLibrary library;
     private PlaybackController playbackController = new PlaybackController();
+
+    private Playlist targetPlaylist;
+    private PlaylistController playlistController;
+    private final javafx.beans.property.BooleanProperty selectionMode = new javafx.beans.property.SimpleBooleanProperty(false);
 
     @FXML private ListView<Track> trackListView;
     @FXML private Label emptyLabel;
@@ -72,20 +80,28 @@ public class TrackLibraryViewController implements Initializable, TrackLibraryOb
                 private final Label lblDuration = makeCellLabel(DURATION);
                 private final Button btnEdit = new Button("✏️");
                 private final Button btnDelete = new Button("🗑");
-                private final HBox content = new HBox(8, lblTitle, lblGenre, lblAuthor, lblDuration, btnEdit, btnDelete);
+                private final Button btnAddToPlaylist = new Button("➕");
+                private final HBox content = new HBox(8, lblTitle, lblGenre, lblAuthor, lblDuration, btnEdit, btnDelete, btnAddToPlaylist);
+
                 {
+                    content.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+                    content.setStyle("-fx-padding: 4 8 4 8;");
                     setStyle("-fx-padding: 6 16 6 16;");
                     setText(null);
                     HBox.setHgrow(lblTitle, javafx.scene.layout.Priority.NEVER);
 
                     btnEdit.setStyle("-fx-background-color: transparent; -fx-cursor: hand; -fx-font-size: 14px; -fx-padding: 2 4 2 4;");
                     btnDelete.setStyle("-fx-background-color: transparent; -fx-cursor: hand; -fx-font-size: 14px; -fx-padding: 2 4 2 4;");
+                    btnAddToPlaylist.setStyle("-fx-background-color: transparent; -fx-cursor: hand; -fx-font-size: 14px; -fx-padding: 2 4 2 4;");
 
                     btnEdit.setOnMouseEntered(e -> btnEdit.setStyle("-fx-background-color: #e0e0e0; -fx-cursor: hand; -fx-font-size: 14px; -fx-padding: 2 4 2 4; -fx-background-radius: 4;"));
                     btnEdit.setOnMouseExited(e -> btnEdit.setStyle("-fx-background-color: transparent; -fx-cursor: hand; -fx-font-size: 14px; -fx-padding: 2 4 2 4;"));
 
                     btnDelete.setOnMouseEntered(e -> btnDelete.setStyle("-fx-background-color: #ffebee; -fx-cursor: hand; -fx-font-size: 14px; -fx-padding: 2 4 2 4; -fx-background-radius: 4;"));
                     btnDelete.setOnMouseExited(e -> btnDelete.setStyle("-fx-background-color: transparent; -fx-cursor: hand; -fx-font-size: 14px; -fx-padding: 2 4 2 4;"));
+
+                    btnAddToPlaylist.setOnMouseEntered(e -> btnAddToPlaylist.setStyle("-fx-background-color: #e8f5e9; -fx-cursor: hand; -fx-font-size: 14px; -fx-padding: 2 4 2 4; -fx-background-radius: 4;"));
+                    btnAddToPlaylist.setOnMouseExited(e -> btnAddToPlaylist.setStyle("-fx-background-color: transparent; -fx-cursor: hand; -fx-font-size: 14px; -fx-padding: 2 4 2 4;"));
 
                     btnEdit.setOnAction(event -> {
                         Track track = getItem();
@@ -98,6 +114,13 @@ public class TrackLibraryViewController implements Initializable, TrackLibraryOb
                         Track track = getItem();
                         if (track != null) {
                             handleDeleteButtonClick(track);
+                        }
+                    });
+
+                    btnAddToPlaylist.setOnAction(event -> {
+                        Track track = getItem();
+                        if (track != null) {
+                            handleAddToPlaylistClick(track);
                         }
                     });
                 }
@@ -114,26 +137,115 @@ public class TrackLibraryViewController implements Initializable, TrackLibraryOb
                         lblGenre.setText(track.getGenre());
                         lblAuthor.setText(track.getAuthor());
                         lblDuration.setText(String.format("%d:%02d", min, sec));
-                        setGraphic(content);
+                       System.out.println("DEBUG CELL -> Traccia: " + track.getTitle() + " | selectionMode attuale: " + selectionMode);
+
+                       btnAddToPlaylist.setVisible(true);
+                        btnAddToPlaylist.setManaged(true);
+                        btnEdit.setVisible(true);
+                        btnEdit.setManaged(true);
+                        btnDelete.setVisible(true);
+                        btnDelete.setManaged(true);
+
+
+
+
+
+
+                         setGraphic(content);
                     }
                 }
             });
 
-            onLibraryChanged();
-
             trackListView.setOnMouseClicked(event -> {
                 if (event.getClickCount() == 2) {
                     Track selected = trackListView.getSelectionModel().getSelectedItem();
-                    if (selected != null) {
+                    if (selected != null && !selectionMode.get()) {
                         try {
                             playbackController.play(selected);
                             App.setRoot("MediaPlayer");
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
+                        }
                     }
-                }
             });
+
+            onLibraryChanged();
+        }
+    }
+
+    /**
+     *Inizializza il controller in modalità selezione traccia per una playlist specifica.
+     * @param targetPlaylist
+     * @param playlistController
+    */
+    
+    public void initSelectionMode(Playlist targetPlaylist, PlaylistController playlistController) {
+        System.out.println("DEBUG -> Il metodo initSelectionMode è stato INVOCATO! Sto attivando la modalità selezione...");
+       
+    this.targetPlaylist = targetPlaylist;
+    this.playlistController = playlistController;
+    this.selectionMode.set(true);
+    if (trackListView != null) {
+            trackListView.refresh();
+        }
+
+        if (trackListView != null) {
+        System.out.println("🔍 DEBUG -> trackListView trovata, eseguo il refresh della lista.");
+        trackListView.refresh();
+    } else {
+        System.out.println("❌ DEBUG CRITICO -> trackListView è NULL in initSelectionMode!");
+    }
+
+
+    
+    
+}
+
+    /**
+     * Gestisce il click sul pulsante "+" di una riga in modalità selezione.
+     * Aggiunge la traccia alla playlist e torna alla schermata PlaylistDetails.
+     *
+     * @param track la traccia da aggiungere alla playlist.
+     */
+    private void handleAddToPlaylistClick(Track track) {
+
+        if (this.targetPlaylist == null) {
+        var allPlaylists = PlaylistLibrary.getInstance().getPlaylists();
+        if (allPlaylists != null && !allPlaylists.isEmpty()) {
+            // Prendiamo la prima playlist disponibile come salvagente
+            this.targetPlaylist = allPlaylists.get(0); 
+        }
+    }
+    // Se non ci sono proprio playlist create nel programma, avvisiamo l'utente
+    if (this.targetPlaylist == null) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle("Errore");
+        alert.setHeaderText("Nessuna playlist disponibile");
+        alert.setContentText("Crea una playlist prima di poter aggiungere dei brani!");
+        alert.showAndWait();
+        return;
+    }
+
+        if (targetPlaylist.getTracks().contains(track)) {
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("Attenzione");
+            alert.setHeaderText("Traccia già presente");
+            alert.setContentText("\"" + track.getTitle() + "\" è già nella playlist \"" + targetPlaylist.getName() + "\".");
+            alert.showAndWait();
+            return;
+        }
+       
+        new AddTrackToPlaylistCommand(targetPlaylist, track).execute();
+ 
+        PlaylistLibrary.getInstance().updatePlaylist(targetPlaylist);
+        try {
+            PlaylistDetailsController controller = App.setRootAndGetController("PlaylistDetails");
+            controller.init(targetPlaylist, playlistController,
+                            TrackLibrary.getInstance(), PlaylistLibrary.getInstance());
+        } catch (IOException e) {
+            System.err.println("Errore nel tornare a PlaylistDetails: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 

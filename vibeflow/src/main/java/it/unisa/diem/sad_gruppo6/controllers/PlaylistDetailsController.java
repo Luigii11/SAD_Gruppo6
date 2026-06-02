@@ -93,7 +93,7 @@ public class PlaylistDetailsController implements PlaylistLibraryObserver{
     private void refresh() {
         if(currentPlaylist != null){
         playlistNameLabel.setText(currentPlaylist.getName());
-        trackCountLabel.setText("Tracce:" + currentPlaylist.getTracks().size());
+        trackCountLabel.setText("Tracce: " + currentPlaylist.getTracks().size());
         playlistTrackListView.getItems().setAll(currentPlaylist.getTracks());
     }
 
@@ -110,9 +110,25 @@ public class PlaylistDetailsController implements PlaylistLibraryObserver{
     @FXML
     private void handleAddTrack(ActionEvent event) {
         try {
-            App.setRoot("TrackLibraryView");
+            TrackLibraryViewController controller = App.setRootAndGetController("TrackLibraryView");
+            controller.initSelectionMode(this.currentPlaylist, this.playlistController);
         } catch (IOException e) {
             System.err.println("Errore nella navigazione a TrackLibraryView: " + e.getMessage());
+            e.printStackTrace();
+        }
+}
+    /**
+     * Gestisce la pressione del pulsante "<--" (torna alla Home).
+     * 
+     */
+    @FXML
+    private void handleGoBack(ActionEvent event) {
+        try {
+            this.playlistLibrary.removeObserver(this);
+            HomeController homeController = App.setRootAndGetController("Home");
+            homeController.init(playlistLibrary, playlistController);
+        } catch (IOException e) {
+            System.err.println("Errore nella navigazione alla Home: " + e.getMessage());
             e.printStackTrace();
         }
     }
