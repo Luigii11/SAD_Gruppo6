@@ -59,6 +59,20 @@ public class Playlist {
     }
 
     /**
+     * Restituisce il numero totale di tracce attualmente presenti nella playlist.
+     * Questo metodo è utile per fornire metadati all'interfaccia grafica (View) 
+     * senza dover esporre direttamente o scorrere l'intera collezione di tracce.
+     *
+     * @return Il numero intero di tracce contenute nella playlist. Se la lista è vuota, restituisce 0.
+     */
+    public int getNumTracks() {
+        if (this.tracks != null) {
+            return this.tracks.size();
+        }
+        return 0;
+    }
+
+    /**
      * Verifica se la playlist è stata generata in automatico dal sistema.
      * * @return true se la playlist è autogenerata, false altrimenti.
      */
