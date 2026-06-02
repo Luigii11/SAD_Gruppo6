@@ -13,11 +13,6 @@ import it.unisa.diem.sad_gruppo6.models.*;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.stage.Stage;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
-import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
@@ -27,7 +22,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.fxml.Initializable;
-
+import it.unisa.diem.sad_gruppo6.App;
 public class TrackLibraryViewController implements Initializable, TrackLibraryObserver {
 
     private static final double TITLE= 200;
@@ -36,6 +31,7 @@ public class TrackLibraryViewController implements Initializable, TrackLibraryOb
     private static final double DURATION = 80;
 
     private TrackLibrary library;
+    private PlaybackController playbackController = new PlaybackController();
 
     @FXML private ListView<Track> trackListView;
     @FXML private Label emptyLabel;
@@ -97,8 +93,27 @@ public class TrackLibraryViewController implements Initializable, TrackLibraryOb
             });
 
             onLibraryChanged();
-
-        }}
+            trackListView.setOnMouseClicked(event -> 
+            {
+            System.out.println("CLICK rilevato, conteggio = " + event.getClickCount());
+            if (event.getClickCount() == 2) {
+                Track selected = trackListView.getSelectionModel().getSelectedItem();
+                System.out.println("doppio click, selected = " + selected);
+                if (selected != null) {
+                   try {
+                        playbackController.play(selected);
+                        System.out.println("play eseguito, prima di setRoot");
+                        App.setRoot("MediaPlayer");
+                        System.out.println("dopo setRoot");
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+            });
+            
+        }
+}
 
         /**
          * Gestione pulsante "+": naviga verso la vista di creazione traccia.
@@ -107,13 +122,8 @@ public class TrackLibraryViewController implements Initializable, TrackLibraryOb
         @FXML 
         private void handleAddTrack(ActionEvent event) {
             try {
-                FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/it/unisa/diem/sad_gruppo6/views/createTrack.fxml"));
-                Parent root = fxmlLoader.load();
-                Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-                stage.setScene(new Scene(root));
-                stage.show();
+                App.setRoot("createTrack");
             } catch (IOException e) {
-                System.out.println("Errore nel caricamento del file FXML: " + e.getMessage());
                 e.printStackTrace();
             }
         }
