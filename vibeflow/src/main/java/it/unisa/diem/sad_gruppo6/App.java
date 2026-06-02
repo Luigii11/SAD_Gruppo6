@@ -18,10 +18,8 @@ public class App extends Application {
     private static Scene scene;
 
     @Override
-
     public void start(Stage stage) {
         try {
-           
             FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("views/Home.fxml"));
             Parent root = fxmlLoader.load();
             HomeController homeController = fxmlLoader.getController();
@@ -30,21 +28,17 @@ public class App extends Application {
             TrackLibrary trackLibrary = TrackLibrary.getInstance();
             CommandManager commandManager = new CommandManager();
 
-            PlaylistController playlistController;
-            playlistController = new PlaylistController(trackLibrary, playlistLibrary, commandManager);
+            PlaylistController playlistController = new PlaylistController(trackLibrary, playlistLibrary, commandManager);
             
             homeController.init(playlistLibrary, playlistController);
-
-            Scene scene = new Scene(root);
-            
-            stage.setTitle("VibeFlow - Test Crea Playlist");
+            scene = new Scene(root);
+            stage.setTitle("VibeFlow");
             stage.setScene(scene);
             stage.show();
         } catch (IOException e) {
             System.out.println("Errore nel caricamento del file FXML: " + e.getMessage());
             e.printStackTrace();
         }
-
     }
 
     public static void setRoot(String fxml) throws IOException {
@@ -52,16 +46,15 @@ public class App extends Application {
     }
 
     public static <T> T setRootAndGetController(String fxml) throws IOException {
-    FXMLLoader loader = new FXMLLoader(App.class.getResource("views/" + fxml + ".fxml"));
-    Parent root = loader.load();
-    scene.setRoot(root);              // usa la stessa scena (niente sgancio)
-    return loader.getController();    // restituisce il controller per configurarlo
-}
+        FXMLLoader loader = new FXMLLoader(App.class.getResource("views/" + fxml + ".fxml"));
+        Parent root = loader.load();
+        scene.setRoot(root);
+        return loader.getController();
+    }
 
     private static Parent loadFXML(String fxml) throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(App.class.getResource("views/" + fxml + ".fxml"));
         return fxmlLoader.load();
-
     }
 
     public static void main(String[] args) {

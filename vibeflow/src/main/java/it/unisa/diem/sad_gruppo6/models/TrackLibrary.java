@@ -47,11 +47,21 @@ public class TrackLibrary
       * 
       * @param track La traccia da aggiungere alla libreria.
      */
-    public void addTrack(Track track) 
+    public void addTrack(Track track)
+
     {
-        tracks.add(track); 
-        notifyTrackAdded(track);
-        notifyObserver();
+        if (tracks.contains(track))
+        {
+            throw new IllegalArgumentException("Impossibile aggiungere la traccia: una traccia con lo stesso titolo e autore è già presente in libreria!");
+        }
+        else
+        {
+            tracks.add(track);
+            notifyTrackAdded(track);
+            notifyObserver();
+        }
+        return;
+
     }
 
      /**

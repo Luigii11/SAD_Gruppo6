@@ -19,6 +19,7 @@
 
 package it.unisa.diem.sad_gruppo6.controllers;
 
+import it.unisa.diem.sad_gruppo6.App;
 import it.unisa.diem.sad_gruppo6.models.Playlist;
 import it.unisa.diem.sad_gruppo6.models.PlaylistLibrary;
 import it.unisa.diem.sad_gruppo6.models.PlaylistLibraryObserver;
@@ -109,17 +110,11 @@ public class PlaylistDetailsController implements PlaylistLibraryObserver{
     @FXML
     private void handleAddTrack(ActionEvent event) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/it/unisa/diem/sad_gruppo6/views/TrackLibraryView.fxml"));
-            Parent root = loader.load();
-            Stage stage = (Stage) ((javafx.scene.Node) event.getSource()).getScene().getWindow();
-            stage.setScene(new Scene(root));
-            stage.show();
-                
-            } catch (IOException e) {
-                System.err.println("Errore nel caricamento di TrackLibraryView.fxml: " + e.getMessage());
-                e.printStackTrace();
-            }
-        
+            App.setRoot("TrackLibraryView");
+        } catch (IOException e) {
+            System.err.println("Errore nella navigazione a TrackLibraryView: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     /**
