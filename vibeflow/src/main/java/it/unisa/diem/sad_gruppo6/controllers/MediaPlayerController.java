@@ -4,7 +4,7 @@
  * con i controlli di riproduzione. Implementa l'interfaccia 'PlaybackObserver' per ricevere aggiornamenti.
  * 
  * 
- * @author EmanuelChirico
+ * @author EmanuelChirico, LuigiAutorino
  */
 
 package it.unisa.diem.sad_gruppo6.controllers;
@@ -14,6 +14,8 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.Slider;
+
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -29,6 +31,9 @@ public class MediaPlayerController implements Initializable, PlaybackObserver {
     @FXML private Label trackAuthorLabel;
     @FXML private Label statusLabel;
     @FXML private Button playPauseButton;
+    @FXML private Button nextButton;
+    @FXML private Button previousButton;
+    @FXML private Slider progressBar;
 
     public MediaPlayerController() 
     {
@@ -76,11 +81,22 @@ public class MediaPlayerController implements Initializable, PlaybackObserver {
         {
             trackTitleLabel.setText(actual_track.getTitle());
             trackAuthorLabel.setText(actual_track.getAuthor());
+            
+            int currentPos = playbackState.getCurrentPosition();
+            int totalDuration = actual_track.getDuration();
+            
+            if (totalDuration > 0) {
+                progressBar.setMax(totalDuration); // Set fondoscala Slider
+                progressBar.setValue(currentPos); // Set posizione Slider
+            } else {
+                progressBar.setValue(0);
+            }
         } 
         else 
         {
             trackTitleLabel.setText("Nessuna traccia selezionata");
             trackAuthorLabel.setText("");
+            progressBar.setValue(0); // Reset Slider
         }
         if (status.equals("Playing")) 
         {
@@ -120,5 +136,25 @@ public class MediaPlayerController implements Initializable, PlaybackObserver {
         {
             e.printStackTrace();
         }
+    }
+
+    /**
+     * Gestisce il click sul pulsante "Next" (Skip in avanti).
+     * Delega l'azione al controller di business.
+     */
+    @FXML
+    private void handleNext() 
+    {
+        playbackController.next();
+    }
+
+    /**
+     * Gestisce il click sul pulsante "Previous" (Skip all'indietro).
+     * Delega l'azione al controller di business.
+     */
+    @FXML
+    private void handlePrevious() 
+    {
+        playbackController.previous();
     }
 }
