@@ -14,6 +14,7 @@
 
 package it.unisa.diem.sad_gruppo6.controllers;
 
+import it.unisa.diem.sad_gruppo6.App;
 import it.unisa.diem.sad_gruppo6.models.Playlist;
 import it.unisa.diem.sad_gruppo6.models.PlaylistLibrary;
 import it.unisa.diem.sad_gruppo6.models.PlaylistLibraryObserver;
@@ -24,15 +25,11 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.Node;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Alert.AlertType;
-import javafx.scene.control.ButtonType;
 import javafx.scene.control.ListView;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-
 import java.io.IOException;
-import java.util.Optional;
+
 
 public class HomeController implements PlaylistLibraryObserver {
 
@@ -75,23 +72,19 @@ public class HomeController implements PlaylistLibraryObserver {
         });
     }
 
-private void openPlaylistDetails(Playlist playlist) {
-    try {
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/it/unisa/diem/sad_gruppo6/views/PlaylistDetails.fxml"));
-        Parent root = loader.load();
-        
-        PlaylistDetailsController detailsController = loader.getController();
-        detailsController.init(playlist, this.playlistController, TrackLibrary.getInstance(), this.playlistLibrary);
-        
-        Stage stage = (Stage) playlistListView.getScene().getWindow();
-        stage.setScene(new Scene(root));
-        stage.show();
-    } catch (IOException e) {
-        System.err.println("Errore nel caricamento di PlaylistDetails.fxml: " + e.getMessage());
-        e.printStackTrace();
-    }
-}
-    
+    private void openPlaylistDetails(Playlist playlist) 
+    {
+        try 
+        {
+            PlaylistDetailsController controller = App.setRootAndGetController("PlaylistDetails");
+            controller.init(playlist, this.playlistController, TrackLibrary.getInstance(), this.playlistLibrary);
+        } 
+        catch (IOException e) 
+        {
+            System.err.println("Errore nel caricamento di PlaylistDetails.fxml: " + e.getMessage());
+            e.printStackTrace();
+        }
+    } 
 
     /**
      * Aggiorna la lista delle playlist visualizzate.
@@ -127,10 +120,8 @@ private void openPlaylistDetails(Playlist playlist) {
             dialogStage.initOwner(owner);
             dialogStage.initModality(Modality.APPLICATION_MODAL);
             
-            // Il codice si "mette in pausa" qui finché la finestra non viene chiusa
             dialogStage.showAndWait(); 
             
-            // AGGIUNTA FONDAMENTALE: Quando la finestra si chiude, forza l'aggiornamento della UI
             refresh(); 
             
         } catch (IOException e) {
