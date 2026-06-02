@@ -3,9 +3,10 @@ package it.unisa.diem.sad_gruppo6.controllers;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
-import it.unisa.diem.sad_gruppo6.playback.states.PausedState;
-import it.unisa.diem.sad_gruppo6.playback.states.PlayingState;
-import it.unisa.diem.sad_gruppo6.playback.PlaybackState;
+
+import it.unisa.diem.sad_gruppo6.model.playback.states.PausedState;
+import it.unisa.diem.sad_gruppo6.model.playback.states.PlaybackState;
+import it.unisa.diem.sad_gruppo6.model.playback.states.PlayingState;
 
 public class PlaybackStateTest {
 
