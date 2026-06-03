@@ -7,11 +7,11 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 import java.io.IOException;
 
-import it.unisa.diem.sad_gruppo6.controllers.HomeController;
-import it.unisa.diem.sad_gruppo6.controllers.PlaylistController;
-import it.unisa.diem.sad_gruppo6.models.PlaylistLibrary;
-import it.unisa.diem.sad_gruppo6.models.TrackLibrary;
-import it.unisa.diem.sad_gruppo6.commands.CommandManager;
+import it.unisa.diem.sad_gruppo6.model.command.CommandManager;
+import it.unisa.diem.sad_gruppo6.model.library.PlaylistLibrary;
+import it.unisa.diem.sad_gruppo6.model.library.TrackLibrary;
+import it.unisa.diem.sad_gruppo6.controller.business.playlist.PlaylistController;
+import it.unisa.diem.sad_gruppo6.controller.ui.home.HomeController;
 
 public class App extends Application {
 
@@ -20,7 +20,7 @@ public class App extends Application {
     @Override
     public void start(Stage stage) {
         try {
-            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("views/Home.fxml"));
+            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("view/home/Home.fxml"));
             Parent root = fxmlLoader.load();
             HomeController homeController = fxmlLoader.getController();
 
@@ -46,14 +46,14 @@ public class App extends Application {
     }
 
     public static <T> T setRootAndGetController(String fxml) throws IOException {
-        FXMLLoader loader = new FXMLLoader(App.class.getResource("views/" + fxml + ".fxml"));
+        FXMLLoader loader = new FXMLLoader(App.class.getResource("view/" + fxml + ".fxml"));
         Parent root = loader.load();
         scene.setRoot(root);
         return loader.getController();
     }
 
     private static Parent loadFXML(String fxml) throws IOException {
-        FXMLLoader fxmlLoader = new FXMLLoader(App.class.getResource("views/" + fxml + ".fxml"));
+        FXMLLoader fxmlLoader = new FXMLLoader(App.class.getResource("view/" + fxml + ".fxml"));
         return fxmlLoader.load();
     }
 

@@ -17,8 +17,9 @@ import java.util.LinkedHashSet;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import it.unisa.diem.sad_gruppo6.models.Track;
-import it.unisa.diem.sad_gruppo6.models.TrackLibrary;
+import it.unisa.diem.sad_gruppo6.controller.ui.library.TrackLibraryViewController;
+import it.unisa.diem.sad_gruppo6.model.domain.Track;
+import it.unisa.diem.sad_gruppo6.model.library.TrackLibrary;
 
 import java.lang.reflect.Field;
 
