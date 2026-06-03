@@ -69,7 +69,11 @@ public class PlaylistLibrary {
      * * @param p La playlist da aggiornare.
      */
     public void updatePlaylist(Playlist p) {
-        // Da implementare
+        
+        int index = playlists.indexOf(p);
+             if (index >= 0) {
+                playlists.set(index, p);
+            }
         notifyObservers();
     }
 
