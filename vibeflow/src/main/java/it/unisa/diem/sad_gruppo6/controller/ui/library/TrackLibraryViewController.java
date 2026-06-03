@@ -51,6 +51,7 @@ public class TrackLibraryViewController implements Initializable, TrackLibraryOb
     private Playlist targetPlaylist;
     private PlaylistController playlistController;
     private final javafx.beans.property.BooleanProperty selectionMode = new javafx.beans.property.SimpleBooleanProperty(false);
+    private String sourceScreen = "home/Home"; // Serve per il tasto indietro, di default porta alla home
 
     @FXML private ListView<Track> trackListView;
     @FXML private Label emptyLabel;
@@ -187,28 +188,23 @@ public class TrackLibraryViewController implements Initializable, TrackLibraryOb
      * @param targetPlaylist
      * @param playlistController
     */
-    
     public void initSelectionMode(Playlist targetPlaylist, PlaylistController playlistController) {
-        System.out.println("DEBUG -> Il metodo initSelectionMode è stato INVOCATO! Sto attivando la modalità selezione...");
+        System.out.println("DEBUG -> Modalità selezione attivata per la playlist: " + targetPlaylist.getName());
        
-    this.targetPlaylist = targetPlaylist;
-    this.playlistController = playlistController;
-    this.selectionMode.set(true);
-    if (trackListView != null) {
-            trackListView.refresh();
-        }
-
+        this.targetPlaylist = targetPlaylist;
+        this.playlistController = playlistController;
+        this.selectionMode.set(true);
+        this.sourceScreen = "playlist/PlaylistDetails";
+        if (trackListView != null) {
+                trackListView.refresh();
+            }
         if (trackListView != null) {
         System.out.println("🔍 DEBUG -> trackListView trovata, eseguo il refresh della lista.");
         trackListView.refresh();
-    } else {
-        System.out.println("❌ DEBUG CRITICO -> trackListView è NULL in initSelectionMode!");
+        } else {
+            System.out.println("❌ DEBUG CRITICO -> trackListView è NULL in initSelectionMode!");
+        }
     }
-
-
-    
-    
-}
 
     /**
      * Gestisce il click sul pulsante "+" di una riga in modalità selezione.
@@ -336,5 +332,27 @@ public class TrackLibraryViewController implements Initializable, TrackLibraryOb
                 new RemoveTrackFromLibraryCommand(track).execute();
             }
         });
+    }
+
+
+    @FXML
+    private void handleGoBack(ActionEvent event) {
+        try {
+            // Se eravamo in selectionMode, dobbiamo tornare ai dettagli della playlist
+            if ("playlist/PlaylistDetails".equals(this.sourceScreen) && this.targetPlaylist != null) {
+                
+                PlaylistDetailsController controller = App.setRootAndGetController(this.sourceScreen);
+                
+                // Reinseriamo i dati nel controller dei dettagli
+                controller.init(this.targetPlaylist, this.playlistController, TrackLibrary.getInstance(), PlaylistLibrary.getInstance());
+
+            } else {
+                // Se eravamo nella libreria normale, torniamo alla Home
+                App.setRoot("home/Home");
+            }
+        } catch (IOException e) {
+            System.err.println("Errore nella navigazione indietro: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 }

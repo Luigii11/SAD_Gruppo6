@@ -73,6 +73,11 @@ public class PlaylistLibrary {
         if (p != null && playlists.contains(p)) {
             notifyObservers();
         }
+        int index = playlists.indexOf(p);
+             if (index >= 0) {
+                playlists.set(index, p);
+            }
+        notifyObservers();
     }
 
     /**

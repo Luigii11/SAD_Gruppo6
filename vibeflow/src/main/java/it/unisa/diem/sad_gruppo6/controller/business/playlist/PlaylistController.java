@@ -11,7 +11,11 @@ import it.unisa.diem.sad_gruppo6.model.command.AddTrackToPlaylistCommand;
 import it.unisa.diem.sad_gruppo6.model.command.AppCommand;
 import it.unisa.diem.sad_gruppo6.model.command.CommandManager;
 import it.unisa.diem.sad_gruppo6.model.command.CreatePlaylistCommand;
+<<<<<<< HEAD
 import it.unisa.diem.sad_gruppo6.model.command.RenamePlaylistCommand;
+=======
+import it.unisa.diem.sad_gruppo6.model.command.RemoveTrackFromPlaylistCommand;
+>>>>>>> main
 import it.unisa.diem.sad_gruppo6.model.domain.Playlist;
 import it.unisa.diem.sad_gruppo6.model.domain.Track;
 import it.unisa.diem.sad_gruppo6.model.library.PlaylistLibrary;
@@ -135,12 +139,16 @@ public class PlaylistController {
      * Rimuove una traccia da una specifica playlist.
      * @param t La traccia da rimuovere.
      * @param p La playlist da cui rimuovere la traccia.
+     * 
      */
-    /*
-    public void removeTrackFromPlaylist(Track t, Playlist p) {
 
+    public void removeTrackFromPlaylist(Track t, Playlist p) {
+        AppCommand command = new RemoveTrackFromPlaylistCommand(p, t);
+        commandManager.execute(command);
+        playlistLibrary.updatePlaylist(p); 
     }
-    */
+    
+    
 
     /*
     /**
