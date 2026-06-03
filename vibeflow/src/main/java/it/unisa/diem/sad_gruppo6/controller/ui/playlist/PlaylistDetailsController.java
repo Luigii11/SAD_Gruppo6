@@ -21,6 +21,8 @@ package it.unisa.diem.sad_gruppo6.controller.ui.playlist;
 
 import it.unisa.diem.sad_gruppo6.App;
 import it.unisa.diem.sad_gruppo6.controller.business.playlist.PlaylistController;
+import it.unisa.diem.sad_gruppo6.controller.ui.home.HomeController;
+import it.unisa.diem.sad_gruppo6.controller.ui.library.TrackLibraryViewController;
 import it.unisa.diem.sad_gruppo6.model.domain.Playlist;
 import it.unisa.diem.sad_gruppo6.model.domain.Track;
 import it.unisa.diem.sad_gruppo6.model.library.PlaylistLibrary;
@@ -94,7 +96,7 @@ public class PlaylistDetailsController implements PlaylistLibraryObserver{
     private void refresh() {
         if(currentPlaylist != null){
         playlistNameLabel.setText(currentPlaylist.getName());
-        trackCountLabel.setText("Tracce:" + currentPlaylist.getTracks().size());
+        trackCountLabel.setText("Tracce: " + currentPlaylist.getTracks().size());
         playlistTrackListView.getItems().setAll(currentPlaylist.getTracks());
     }
 
@@ -111,9 +113,25 @@ public class PlaylistDetailsController implements PlaylistLibraryObserver{
     @FXML
     private void handleAddTrack(ActionEvent event) {
         try {
-            App.setRoot("library/TrackLibraryView");
+            TrackLibraryViewController controller = App.setRootAndGetController("library/TrackLibraryView");
+            controller.initSelectionMode(this.currentPlaylist, this.playlistController);
         } catch (IOException e) {
             System.err.println("Errore nella navigazione a TrackLibraryView: " + e.getMessage());
+            e.printStackTrace();
+        }
+}
+    /**
+     * Gestisce la pressione del pulsante "<--" (torna alla Home).
+     * 
+     */
+    @FXML
+    private void handleGoBack(ActionEvent event) {
+        try {
+            this.playlistLibrary.removeObserver(this);
+            HomeController homeController = App.setRootAndGetController("Home");
+            homeController.init(playlistLibrary, playlistController);
+        } catch (IOException e) {
+            System.err.println("Errore nella navigazione alla Home: " + e.getMessage());
             e.printStackTrace();
         }
     }

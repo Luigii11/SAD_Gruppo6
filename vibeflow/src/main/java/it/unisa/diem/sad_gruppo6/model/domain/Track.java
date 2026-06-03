@@ -178,4 +178,8 @@ public class Track
         return Objects.hash(title, author);
     }
 
+    @Override
+    public String toString() {
+    return this.getTitle() + " - " + this.getAuthor();
+    }
 }
