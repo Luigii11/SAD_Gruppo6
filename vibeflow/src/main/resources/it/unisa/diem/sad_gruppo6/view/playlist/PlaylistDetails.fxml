@@ -34,16 +34,20 @@
                style="-fx-text-fill: gray; -fx-font-size: 14px;"/>
     </HBox>
 
+    <Label text="QUALE TRACCIA VUOI RIMUOVERE?" fx:id="removePromptLabel"
+       visible="false" style="-fx-font-weight: bold; -fx-font-size: 14px;"
+       HBox.hgrow="ALWAYS"
+       maxWidth="Infinity"
+       alignment="CENTER"/>
+
     <Label text="Brani nella playlist:" style="-fx-font-weight: bold;"/>
     <ListView fx:id="playlistTrackListView" prefHeight="200" VBox.vgrow="ALWAYS"/>
-    <HBox spacing="10">
+    
+    <HBox alignment="CENTER_RIGHT" spacing="10" VBox.vgrow="ALWAYS">
         <Button text="Rimuovi traccia"
                 onAction="#handleRemoveTrack"
-                style="-fx-background-color: #e0e0e0;"/> 
-                
-    </HBox>
+                style="-fx-background-color: #e0e0e0;"/>      
 
-    <HBox alignment="BOTTOM_RIGHT" VBox.vgrow="ALWAYS">
         <Button text="Aggiungi una traccia"
                 onAction="#handleAddTrack"
                 style="-fx-background-color: #0078d4; -fx-text-fill: white; -fx-font-weight: bold; -fx-padding: 8 16 8 16;"/>

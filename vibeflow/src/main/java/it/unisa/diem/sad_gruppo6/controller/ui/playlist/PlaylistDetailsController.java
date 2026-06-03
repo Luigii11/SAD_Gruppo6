@@ -56,11 +56,16 @@ public class PlaylistDetailsController implements PlaylistLibraryObserver{
 
     @FXML
     private ListView<Track> allTracksListView;
+    @FXML
+    private Label removePromptLabel;
+
+
 
     private Playlist currentPlaylist;
     private PlaylistController playlistController;
     private PlaylistLibrary playlistLibrary;
     private TrackLibrary trackLibrary;
+    
     
     /**
      * Inizializza il controller con le dipendenze necessarie e si registra come observer.
@@ -97,13 +102,15 @@ public class PlaylistDetailsController implements PlaylistLibraryObserver{
         if(currentPlaylist != null){
         playlistNameLabel.setText(currentPlaylist.getName());
         trackCountLabel.setText("Tracce: " + currentPlaylist.getTracks().size());
+        //playlistTrackListView.getItems().setAll(currentPlaylist.getTracks());
         playlistTrackListView.getItems().setAll(currentPlaylist.getTracks());
+
     }
 
     }
 
     /**
-     * Gestisce la pressione del pulsante "+" (aggiungi traccia).
+     * Gestisce la pressione del pulsante "aggiungi traccia".
      * Prende la traccia selezionata dalla lista globale e la aggiunge alla playlist.
      * Mostra un alert se la traccia è già presente nella playlist.
      * 
@@ -119,7 +126,38 @@ public class PlaylistDetailsController implements PlaylistLibraryObserver{
             System.err.println("Errore nella navigazione a TrackLibraryView: " + e.getMessage());
             e.printStackTrace();
         }
-}
+    }
+
+    /**
+     * Gestisce la pressione del pulsante "rimuovi traccia".
+     * Recupera la traccia selezionata dalla lista della playlist, mostra un popup di conferma e, solo in caso di conferma
+     * dell'utente, procede con la rimozione della traccia dalla playlist.
+     * 
+     * @see PlaylistController#removeTrackFromPlaylist(Track, Playlist)
+     * 
+     */
+    @FXML
+    private void handleRemoveTrack(ActionEvent event){
+       Track selectedTrack = playlistTrackListView.getSelectionModel().getSelectedItem();
+    if (selectedTrack == null) {
+        showAlert(AlertType.WARNING, "Nessuna traccia selezionata",
+                  "Seleziona una traccia dalla lista prima di rimuoverla.");
+        return;
+    }
+
+    Alert confirm = new Alert(AlertType.CONFIRMATION);
+    confirm.setTitle("Conferma rimozione");
+    confirm.setHeaderText("Rimuovi traccia");
+    confirm.setContentText("Sicuro di voler rimuovere \"" + selectedTrack.getTitle() 
+                           + "\" dalla playlist \"" + currentPlaylist.getName() + "\"?");
+
+    Optional<ButtonType> result = confirm.showAndWait();
+    if (result.isPresent() && result.get() == ButtonType.OK) {
+        playlistController.removeTrackFromPlaylist(selectedTrack, currentPlaylist);
+        refresh();
+    }
+    }
+
     /**
      * Gestisce la pressione del pulsante "<--" (torna alla Home).
      * 
