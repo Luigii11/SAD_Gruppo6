@@ -29,19 +29,14 @@ import it.unisa.diem.sad_gruppo6.model.library.PlaylistLibrary;
 import it.unisa.diem.sad_gruppo6.model.library.PlaylistLibraryObserver;
 import it.unisa.diem.sad_gruppo6.model.library.TrackLibrary;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
-import javafx.stage.Stage;
 import javafx.event.ActionEvent;
-
 import java.io.IOException;
-import java.util.Optional;
+
 
 public class PlaylistDetailsController implements PlaylistLibraryObserver{
     
