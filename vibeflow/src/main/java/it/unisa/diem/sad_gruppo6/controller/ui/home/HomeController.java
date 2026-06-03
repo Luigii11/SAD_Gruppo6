@@ -18,6 +18,7 @@ import it.unisa.diem.sad_gruppo6.App;
 import it.unisa.diem.sad_gruppo6.controller.business.playlist.PlaylistController;
 import it.unisa.diem.sad_gruppo6.controller.ui.playlist.PlaylistCreationDialogController;
 import it.unisa.diem.sad_gruppo6.controller.ui.playlist.PlaylistDetailsController;
+import it.unisa.diem.sad_gruppo6.model.command.CommandManager;
 import it.unisa.diem.sad_gruppo6.model.domain.Playlist;
 import it.unisa.diem.sad_gruppo6.model.library.PlaylistLibrary;
 import it.unisa.diem.sad_gruppo6.model.library.PlaylistLibraryObserver;
@@ -45,28 +46,21 @@ public class HomeController implements PlaylistLibraryObserver {
     private PlaylistController playlistController;
 
     /**
-     * Inizializza il controller con le dipendenze necessarie e si registra come observer.
-     * 
-     * @param playlistLibrary La libreria delle playlist da osservare.
-     * @param playlistController Il controller per gestire le azioni sulle playlist.
-     * 
+     * Inizializza automaticamente il controller recuperando le dipendenze dai Singleton
      */
+    @FXML
+    public void initialize() {
+        
+        this.playlistLibrary = PlaylistLibrary.getInstance();
+        TrackLibrary trackLibrary = TrackLibrary.getInstance();
+        CommandManager commandManager = new CommandManager();
 
-    public void init(PlaylistLibrary playlistLibrary, PlaylistController playlistController) {
-        if (playlistLibrary == null) {
-            throw new IllegalArgumentException("PlaylistLibrary non può essere null");
-        }
-        if (playlistController == null) {
-            throw new IllegalArgumentException("PlaylistController non può essere null");
-        }
-        this.playlistLibrary = playlistLibrary;
-        this.playlistController = playlistController;
-        playlistLibrary.registerObserver(this);
+        this.playlistController = new PlaylistController(trackLibrary, this.playlistLibrary, commandManager);
+        
+        this.playlistLibrary.registerObserver(this);
         refresh();
-
-       
         playlistListView.setOnMouseClicked(event -> {
-            if (event.getClickCount() == 2) { // Doppio click per aprire la playlist
+            if (event.getClickCount() == 2) { 
                 Playlist selectedPlaylist = playlistListView.getSelectionModel().getSelectedItem();
                 if (selectedPlaylist != null) {
                     openPlaylistDetails(selectedPlaylist);

@@ -128,8 +128,7 @@ public class PlaylistDetailsController implements PlaylistLibraryObserver{
     private void handleGoBack(ActionEvent event) {
         try {
             this.playlistLibrary.removeObserver(this);
-            HomeController homeController = App.setRootAndGetController("Home");
-            homeController.init(playlistLibrary, playlistController);
+            App.setRoot("home/Home");
         } catch (IOException e) {
             System.err.println("Errore nella navigazione alla Home: " + e.getMessage());
             e.printStackTrace();

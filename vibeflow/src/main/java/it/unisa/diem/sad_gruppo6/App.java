@@ -7,12 +7,6 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 import java.io.IOException;
 
-import it.unisa.diem.sad_gruppo6.model.command.CommandManager;
-import it.unisa.diem.sad_gruppo6.model.library.PlaylistLibrary;
-import it.unisa.diem.sad_gruppo6.model.library.TrackLibrary;
-import it.unisa.diem.sad_gruppo6.controller.business.playlist.PlaylistController;
-import it.unisa.diem.sad_gruppo6.controller.ui.home.HomeController;
-
 public class App extends Application {
 
     private static Scene scene;
@@ -22,15 +16,7 @@ public class App extends Application {
         try {
             FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("view/home/Home.fxml"));
             Parent root = fxmlLoader.load();
-            HomeController homeController = fxmlLoader.getController();
-
-            PlaylistLibrary playlistLibrary = PlaylistLibrary.getInstance();
-            TrackLibrary trackLibrary = TrackLibrary.getInstance();
-            CommandManager commandManager = new CommandManager();
-
-            PlaylistController playlistController = new PlaylistController(trackLibrary, playlistLibrary, commandManager);
             
-            homeController.init(playlistLibrary, playlistController);
             scene = new Scene(root);
             stage.setTitle("VibeFlow");
             stage.setScene(scene);
