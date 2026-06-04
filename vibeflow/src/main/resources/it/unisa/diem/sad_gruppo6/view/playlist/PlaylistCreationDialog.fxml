@@ -17,7 +17,7 @@
       </Label>
       <ImageView fitHeight="100.0" fitWidth="175.0" layoutX="88.0" layoutY="125.0" pickOnBounds="true" preserveRatio="true">
          <image>
-            <Image url="@../../../../../../../../../../../../../../../Downloads/PlaylistIcon.png" />
+            <Image url="@/images/PlaylistIcon.png" />
          </image>
       </ImageView>
       <TextField id="playlistName" fx:id="playlistName" layoutX="256.0" layoutY="163.0" promptText="Playlist Name" />
