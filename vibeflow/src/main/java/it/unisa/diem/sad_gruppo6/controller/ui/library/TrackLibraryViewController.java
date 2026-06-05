@@ -291,17 +291,32 @@ public class TrackLibraryViewController implements TrackLibraryObserver {
     }
 
     /**
-     * @brief Prepara la traccia per la modifica e naviga verso la schermata dedicata.
+     * @brief Prepara la traccia per la modifica e apre il popup dedicato.
      * @param track La traccia selezionata per la modifica.
      */
     private void handleEditButtonClick(Track track) {
         if (track == null) return;
+        
         try {
-            prepareForNavigation();
-            TrackController controller = App.setRootAndGetController("library/editTrack");
-            controller.setTrackToEdit(track);
+            FXMLLoader loader = new FXMLLoader(App.class.getResource("/it/unisa/diem/sad_gruppo6/view/library/TrackEditDialog.fxml"));
+            Parent root = loader.load();
+            TrackEditDialogController dialogController = loader.getController();
+            dialogController.setTrackToEdit(track);
+
+            Stage dialogStage = new Stage();
+            dialogStage.setTitle("Edit Track");
+            dialogStage.initModality(Modality.APPLICATION_MODAL);
+            dialogStage.initStyle(StageStyle.TRANSPARENT); 
+            
+            Scene scene = new Scene(root);
+            scene.setFill(javafx.scene.paint.Color.TRANSPARENT); 
+            dialogStage.setScene(scene);
+            dialogStage.showAndWait(); 
+            trackTable.refresh();
+            
         } catch (IOException e) {
-            showError("Navigation Error", "Could not load the track editing view.");
+            showError("UI Error", "Could not load the track editing dialog.");
+            e.printStackTrace();
         }
     }
 

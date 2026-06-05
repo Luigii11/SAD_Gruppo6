@@ -1,15 +1,15 @@
 /**
- * @file TrackCreationDialogController.java
- * @brief Controller UI per il popup modale di creazione di una nuova traccia.
- * @details Si occupa della lettura dei dati dalla view, della validazione sintattica 
- * (campi obbligatori e parsing dei tipi numerici) e della gestione degli alert di errore.
- * Delega la creazione effettiva dell'entità Track al livello di business logic.
+ * @file TrackEditDialogController.java
+ * @brief Controller UI per il popup modale di modifica di una traccia.
+ * @details Si occupa di pre-popolare i campi con i dati esistenti, effettuare la validazione 
+ * sintattica delle modifiche (campi obbligatori e formati) e delegare l'aggiornamento al business layer.
  * @authors LuigiAutorino, EmanuelChirico
  */
 
 package it.unisa.diem.sad_gruppo6.controller.ui.library;
 
 import it.unisa.diem.sad_gruppo6.controller.ui.utils.DialogUtils;
+import it.unisa.diem.sad_gruppo6.model.domain.Track;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
@@ -20,7 +20,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
-public class TrackCreationDialogController {
+public class TrackEditDialogController {
 
     /* Componenti grafici */
     @FXML private VBox rootContainer;
@@ -32,14 +32,27 @@ public class TrackCreationDialogController {
     @FXML private Button cancelButton;
     @FXML private Button saveButton;
 
-    // TODO: @EmanuelChirico - Inietta qui il TrackController di business per gestire il salvataggio
+    /* Attributi */
+    private Track trackToEdit;
+
+    // TODO: @EmanuelChirico - Inietta qui il TrackController di business per gestire l'aggiornamento
     // private TrackController trackController;
 
     /**
-     * @brief Gestisce l'azione di salvataggio della traccia.
-     * @details Preleva i testi, li valida sintatticamente e, se corretti, invoca 
-     * il controller di business per la persistenza.
+     * @brief Inizializza il form con i dati della traccia selezionata.
+     * @param track La traccia da modificare.
      */
+    public void setTrackToEdit(Track track) {
+        this.trackToEdit = track;
+        
+        // Popola i campi di testo con i dati attuali
+        titleField.setText(track.getTitle());
+        authorField.setText(track.getAuthor());
+        durationField.setText(String.valueOf(track.getDuration()));
+        genreField.setText(track.getGenre() != null ? track.getGenre() : "");
+        yearField.setText(track.getYear() > 0 ? String.valueOf(track.getYear()) : "");
+    }
+
     @FXML
     private void handleSave(ActionEvent event) {
         String title = titleField.getText().trim();
@@ -70,17 +83,18 @@ public class TrackCreationDialogController {
 
             // =========================================================
             // ---> AREA DI INTERVENTO BUSINESS LOGIC (TODO) <---
-            // I dati sono stati validati dalla UI. 
-            // Inserire qui la chiamata al controller di business:
-            // trackController.createTrack(title, author, duration, genre, year);
+            // I dati sono stati validati dalla UI.
+            // Il collega dovrà aggiornare i dati usando il suo command/controller.
+            // Es: new EditTrackCommand(trackToEdit, title, author, duration, genre, year).execute();
             // =========================================================
             
-            System.out.println("DEBUG UI: Traccia Validata -> " + title + " (" + year + ")");
+            System.out.println("DEBUG UI: Modifica Validata -> Vecchio Titolo: " + trackToEdit.getTitle() + " | Nuovo: " + title);
             
-            // Mock temporaneo per test visivo (da rimuovere una volta implementato il controller)
-            it.unisa.diem.sad_gruppo6.model.library.TrackLibrary.getInstance().addTrack(
-                new it.unisa.diem.sad_gruppo6.model.domain.Track(title, author, duration, genre, year)
-            );
+            // Mock visivo: modifichiamo l'oggetto in ram per vedere subito il cambiamento (Da rimuovere)
+            trackToEdit.setTitle(title);
+            trackToEdit.setAuthor(author);
+            trackToEdit.setGenre(genre);
+            trackToEdit.setYear(year);
             close();
 
         } catch (NumberFormatException e) {
@@ -90,27 +104,16 @@ public class TrackCreationDialogController {
         }
     }
 
-    /**
-     * @brief Annulla l'operazione e chiude la finestra senza salvare.
-     */
     @FXML
     private void handleCancel(ActionEvent event) {
         close();
     }
 
-    /**
-     * @brief Metodo di utilità per chiudere il popup modale corrente.
-     */
     private void close() {
         Stage stage = (Stage) saveButton.getScene().getWindow();
         stage.close();
     }
 
-    /**
-     * @brief Mostra un pop-up d'errore applicando il tema scuro personalizzato.
-     * @param header Intestazione dell'errore (titolo breve).
-     * @param content Corpo del messaggio d'errore esplicativo.
-     */
     private void showError(String header, String content) {
         Alert alert = new Alert(AlertType.ERROR, content, ButtonType.OK);
         alert.setTitle("Error");
