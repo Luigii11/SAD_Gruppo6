@@ -1,84 +1,80 @@
 /**
  * @file PlaylistCreationDialogController.java
- * Controller della vista per la finestra di dialogo di creazione di una nuova playlist.
- * Gestisce l'interazione dell'utente con l'interfaccia grafica (inserimento del nome, 
- * salvataggio, annullamento e visualizzazione degli errori).
- * * @author LuigiAutorino
+ * @brief Controller per la finestra modale di creazione di una nuova playlist.
+ * @details Gestisce l'interazione dell'utente per l'inserimento del nome, invia il comando 
+ * di creazione al controller di dominio e gestisce eventuali conflitti o errori di validazione.
+ * @author LuigiAutorino
  */
 
 package it.unisa.diem.sad_gruppo6.controller.ui.playlist;
 
 import it.unisa.diem.sad_gruppo6.controller.business.playlist.PlaylistController;
+import it.unisa.diem.sad_gruppo6.controller.ui.utils.DialogUtils;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 public class PlaylistCreationDialogController {
 
-    // Attributi FXML
-    @FXML
-    private TextField playlistName;
+    /* Componenti grafici */
+    @FXML private VBox rootContainer;
+    @FXML private TextField playlistName;
+    @FXML private Button saveButton;
 
-    @FXML
-    private Button saveButton;
-
-    // Riferimento al controller di dominio
+    /* Attributi */    
     private PlaylistController playlistController;
 
     /**
-     * Imposta il riferimento al controller principale delle playlist.
-     * Necessario per delegare la logica di business (es. creazione effettiva della playlist).
-     * * @param controller L'istanza del 'PlaylistController' da utilizzare.
+     * @brief Inietta il controller di business logic.
+     * @details Metodo chiamato dal controller "padre" (Home) prima di mostrare la finestra.
+     * @param controller L'istanza attiva del gestore delle playlist.
      */
     public void setPlaylistController(PlaylistController controller) {
         this.playlistController = controller;
     }
 
+    /* Eventi */
+
     /**
-     * Gestisce l'evento scatenato dal click sul pulsante "Save".
-     * Prende in input il testo inserito dall'utente e tenta di creare la playlist.
-     * In caso di successo, chiude il dialog. In caso di errore (es. nome vuoto o duplicato),
-     * intercetta l'eccezione e mostra un pop-up di errore.
-     * * @param event L'evento generato dall'interazione con il pulsante.
+     * @brief Gestisce il tentativo di salvataggio della playlist.
+     * @details Preleva il testo, lo invia al modello di dominio e chiude la finestra 
+     * in caso di successo. Se il nome è invalido o duplicato, mostra un errore senza chiudere.
      */
     @FXML
     private void handleSave(ActionEvent event) {
         String userInput = playlistName.getText();
         
         try {
-            // Tenta la creazione della playlist
+            // Tenta la creazione delegando la logica di business
             playlistController.createPlaylist(userInput);
             
-            // SCENARIO 3: Creazione avvenuta, chiudo la finestra.
-            // Il PlaylistLibraryObserver notificherà la HomeView in automatico
+            // Se non ci sono eccezioni, la playlist è creata. Chiudiamo il pop-up.
             close();
             
         } catch (IllegalArgumentException e) {
-            // SCENARIO 1 e 2: L'eccezione viene catturata. 
-            // e.getMessage() conterrà "Il nome non può essere vuoto" (Scenario 1) 
-            // oppure "Esiste già una playlist con questo nome" (Scenario 2).
-            showError("Impossibile creare la playlist", e.getMessage());
+            // Intercetta stringhe vuote o nomi già esistenti nel sistema
+            showError("Creation failed", e.getMessage());
         }
     }
 
     /**
-     * Gestisce l'evento scatenato dal click sul pulsante "Back".
-     * Chiude semplicemente la finestra di dialogo senza effettuare alcun salvataggio.
-     * * @param event L'evento generato dall'interazione con il pulsante.
+     * @brief Annulla l'operazione e chiude la finestra.
      */
     @FXML
     private void handleBack(ActionEvent event) {
         close();
     }
 
-    // Metodi di utilità per la UI
-
+    /* Utils */
+    
     /**
-     * Chiude l'attuale finestra di dialogo (Stage) in cui risiede il controller.
+     * @brief Chiude lo Stage (finestra) corrente associato a questo controller.
      */
     private void close() {
         Stage stage = (Stage) saveButton.getScene().getWindow();
@@ -86,15 +82,18 @@ public class PlaylistCreationDialogController {
     }
 
     /**
-     * Mostra un pop-up di errore a schermo con un titolo e un messaggio specifici.
-     * * @param header L'intestazione in grassetto dell'errore.
-     * @param content Il corpo del messaggio d'errore (solitamente generato dall'eccezione).
+     * @brief Genera un popup di errore bloccante tematizzato.
+     * @param header Titolo dell'errore (es. "Creation failed").
+     * @param content Dettaglio dell'eccezione (es. "Playlist already exists").
      */
     private void showError(String header, String content) {
-        Alert alert = new Alert(AlertType.ERROR);
-        alert.setTitle("Errore");
+        Alert alert = new Alert(AlertType.ERROR, content, ButtonType.OK);
+        alert.setTitle("Error");
         alert.setHeaderText(header);
-        alert.setContentText(content);
+        
+        // Applica il tema scuro e l'icona personalizzata coerente col resto dell'app
+        DialogUtils.personalizza(alert, rootContainer, "❌", "#FF4C30");
+        
         alert.showAndWait();
     }
 }
