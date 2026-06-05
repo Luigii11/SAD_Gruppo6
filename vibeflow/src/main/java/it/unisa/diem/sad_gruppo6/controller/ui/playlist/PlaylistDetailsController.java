@@ -1,21 +1,17 @@
 /**
  * @file PlaylistDetailsController.java
- * Controller della vista dei dettagli di una playlist.
- * Mostra i brani contenuti in una specifica playlist e permette all'utente di:
+ * @brief Controller della vista dei dettagli di una playlist.
+ * @details Mostra i brani contenuti in una specifica playlist e permette all'utente di:
  * - Aggiungere una traccia alla playlist selezionandola dalla libreria globale.
  * - Rimuovere una traccia dalla playlist.
- * 
- * Si aggiorna automaticamente tramite il pattern Observer sulla PlaylistLibrary.
- * 
- * @pattern Observer
- * 
- * @see PlaylistController
+ * * L'interfaccia si aggiorna automaticamente tramite il pattern Observer sulla classe {@link PlaylistLibrary}.
+ * Inoltre, delega la gestione della barra del player audio inferiore a un sotto-controller integrato.
+ * * @see PlaylistController
  * @see PlaylistLibraryObserver
- * 
- * @author EmanuelaGraziuso, ChiaraCrisci
+ * @see PlayerBarController
+ * * @author EmanuelaGraziuso, ChiaraCrisci, LuigiAutorino
+ * @date Giugno 2026
  */
-
-
 
 package it.unisa.diem.sad_gruppo6.controller.ui.playlist;
 
@@ -23,209 +19,253 @@ import it.unisa.diem.sad_gruppo6.App;
 import it.unisa.diem.sad_gruppo6.controller.business.playback.PlaybackController;
 import it.unisa.diem.sad_gruppo6.controller.business.playlist.PlaylistController;
 import it.unisa.diem.sad_gruppo6.controller.ui.library.TrackLibraryViewController;
-import it.unisa.diem.sad_gruppo6.model.domain.Playlist;
+import it.unisa.diem.sad_gruppo6.controller.ui.player.MediaPlayerController;
+import it.unisa.diem.sad_gruppo6.controller.ui.utils.DialogUtils;
 import it.unisa.diem.sad_gruppo6.model.domain.Track;
+import it.unisa.diem.sad_gruppo6.model.domain.Playlist;
 import it.unisa.diem.sad_gruppo6.model.library.PlaylistLibrary;
 import it.unisa.diem.sad_gruppo6.model.library.PlaylistLibraryObserver;
 import it.unisa.diem.sad_gruppo6.model.library.TrackLibrary;
+import it.unisa.diem.sad_gruppo6.model.playback.states.PlaybackObserver;
+import it.unisa.diem.sad_gruppo6.model.playback.states.PlaybackState;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
+import javafx.scene.control.TableCell;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
 import javafx.event.ActionEvent;
 import java.io.IOException;
 import java.util.Optional;
 
-public class PlaylistDetailsController implements PlaylistLibraryObserver{
+public class PlaylistDetailsController implements PlaylistLibraryObserver, PlaybackObserver {
     
-    @FXML
-    private Label playlistNameLabel;
+    /* Componenti grafici */
+    @FXML private Label playlistNameLabel;
+    @FXML private Label trackCountLabel;
+    @FXML private Button playlistPlayPauseButton;
+    @FXML private TableView<Track> trackTable;
+    @FXML private TableColumn<Track, String> titleCol;
+    @FXML private TableColumn<Track, String> authorCol;
+    @FXML private TableColumn<Track, String> metaCol;
+    @FXML private TableColumn<Track, String> durationCol;
+    @FXML private TableColumn<Track, Void> actionCol;
+    @FXML private MediaPlayerController mediaPlayerController;
 
-    @FXML
-    private Label trackCountLabel;
-
-    @FXML
-    private ListView<Track> playlistTrackListView;
-
-    @FXML
-    private ListView<Track> allTracksListView;
-    @FXML
-    private Label removePromptLabel;
-
-
-
+    /* Attributi */
     private Playlist currentPlaylist;
     private PlaylistController playlistController;
     private PlaylistLibrary playlistLibrary;
-    private TrackLibrary trackLibrary;
-    private PlaybackController playbackController = new PlaybackController();
-    
+    private PlaybackState playbackState;
+    private PlaybackController playbackController;
     
     /**
-     * Inizializza il controller con le dipendenze necessarie e si registra come observer.
-     * 
-     * @param playlist           La playlist corrente da visualizzare e gestire.
-     * @param playlistController Il controller di dominio per le operazioni sulle playlist.
-     * @param trackLibrary       La libreria globale delle tracce (per la lista di selezione).
-     * @param playlistLibrary    La libreria delle playlist (per registrarsi come observer).
+     * @brief Inizializzazione del contesto e registrazione degli Observer.
+     * @details Viene chiamato esternamente per passare i dati dinamicamente. Collega gli elementi
+     * della UI alle sorgenti dati e attiva i canali di ascolto per i cambiamenti di stato.
+     * @param playlist           La playlist di cui mostrare i dettagli.
+     * @param playlistController Il controller di business che gestisce le modifiche alla libreria.
+     * @param trackLibrary       Riferimento non utilizzato, mantenuto per compatibilità con la firma del metodo.
+     * @param playlistLibrary    Il catalogo globale (Singleton) contenente tutte le playlist.
      */
-    public void init(Playlist playlist, PlaylistController playlistController,
-                     TrackLibrary trackLibrary, PlaylistLibrary playlistLibrary) {
+    public void init(Playlist playlist, PlaylistController playlistController, TrackLibrary trackLibrary, PlaylistLibrary playlistLibrary) {
+        
         this.currentPlaylist = playlist;
         this.playlistController = playlistController;
-        this.trackLibrary = trackLibrary;
         this.playlistLibrary = playlistLibrary;
-        this.playlistLibrary.registerObserver(this);
         
+        this.playbackState = PlaybackState.getInstance();
+        this.playbackController = new PlaybackController();
+        
+        // Registrazione degli osservatori sui Singleton core dell'applicazione
+        this.playlistLibrary.registerObserver(this);
+        this.playbackState.registerObserver(this); 
+        
+        setupTableView(); 
         refresh();
+        updateHeaderPlayButton(); 
 
-        playlistTrackListView.setOnMouseClicked(event -> {
+        // Gestione del doppio click sulle righe per avviare la riproduzione del brano
+        trackTable.setOnMouseClicked(event -> {
             if (event.getClickCount() == 2) {
-                Track selectedTrack = playlistTrackListView.getSelectionModel().getSelectedItem();
-                
+                Track selectedTrack = trackTable.getSelectionModel().getSelectedItem();
                 if (selectedTrack != null) {
-                    try {
-                        // Per ora, avviamo solo la singola traccia selezionata (come facevi prima)
-                        playbackController.play(selectedTrack);
-                        
-                        // Cambia schermata aprendo il player
-                        App.setRoot("player/MediaPlayer");
-                    } catch (IOException e) {
-                        System.err.println("Errore nell'apertura del MediaPlayer: " + e.getMessage());
-                        e.printStackTrace();
-                    }
+                    playbackController.play(selectedTrack);
                 }
             }
         });
     }
 
     /**
-     * Aggiorna i dati visualizzati nella lista.
+     * @brief Collega dinamicamente le colonne della TableView alle proprietà dei brani.
+     * @details Configura le fabbriche delle celle (cell value factories) utilizzando espressioni lambda.
      */
+    private void setupTableView() {
+        titleCol.setCellValueFactory(data -> new SimpleStringProperty("♫   " + data.getValue().getTitle()));
+        authorCol.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getAuthor()));
+        
+        metaCol.setCellValueFactory(data -> {
+            String genre = data.getValue().getGenre() != null ? data.getValue().getGenre() : "Unknown";
+            String year = data.getValue().getYear() > 0 ? String.valueOf(data.getValue().getYear()) : "----";
+            return new SimpleStringProperty(genre + "  •  " + year);
+        });
+
+        durationCol.setCellValueFactory(data -> {
+            int totalSeconds = data.getValue().getDuration();
+            return new SimpleStringProperty(String.format("%d:%02d", totalSeconds / 60, totalSeconds % 60));
+        });
+
+        // Inserisce un pulsante cestino interattivo all'interno dell'ultima colonna delle azioni
+        actionCol.setCellFactory(col -> new TableCell<>() {
+            private final Button deleteBtn = new Button("🗑");
+            {
+                deleteBtn.getStyleClass().add("cell-inline-delete-btn");
+                deleteBtn.setOnAction(e -> {
+                    Track track = getTableView().getItems().get(getIndex());
+                    handleRemoveTrack(track);
+                });
+            }
+            @Override
+            protected void updateItem(Void item, boolean empty) {
+                super.updateItem(item, empty);
+                setGraphic(empty ? null : deleteBtn);
+            }
+        });
+    }
+
+    /* Observer */
 
     @Override
-    public void onPlaylistLibraryChanged() {
-        refresh();
+    public void onPlaylistLibraryChanged() { 
+        refresh(); 
     }
 
+    @Override
+    public void update(PlaybackState state) { 
+        updateHeaderPlayButton(); 
+    }
+
+    /* Aggiornamento UI */
+
     /**
-     * Aggiorna la vista con i dati aggiornati della playlist corrente: nome, numero di tracce e lista dei brani.
+     * @brief Svuota e ricarica i dati delle righe della tabella e delle etichette informative.
      */
     private void refresh() {
-        if(currentPlaylist != null){
-        playlistNameLabel.setText(currentPlaylist.getName());
-        trackCountLabel.setText("Tracce: " + currentPlaylist.getTracks().size());
-        //playlistTrackListView.getItems().setAll(currentPlaylist.getTracks());
-        playlistTrackListView.getItems().setAll(currentPlaylist.getTracks());
-
-    }
-
+        if (currentPlaylist != null) {
+            playlistNameLabel.setText(currentPlaylist.getName());
+            trackCountLabel.setText("Total tracks: " + currentPlaylist.getTracks().size());
+            trackTable.getItems().setAll(currentPlaylist.getTracks());
+        }
     }
 
     /**
-     * Gestisce la pressione del pulsante "aggiungi traccia".
-     * Prende la traccia selezionata dalla lista globale e la aggiunge alla playlist.
-     * Mostra un alert se la traccia è già presente nella playlist.
-     * 
-     * @see PlaylistController#addTrackToPlaylist(Track, Playlist)
+     * @brief Aggiorna l'icona del pulsante Play/Pausa nell'intestazione in base allo stato del player.
+     * @details Controlla se la playlist attualmente visualizzata coincide con quella in riproduzione.
      */
+    private void updateHeaderPlayButton() {
+        String status = playbackState.getStatusName();
+        
+        if ("Playing".equals(status) && currentPlaylist != null && 
+            playbackState.getCurrentTrack() != null && currentPlaylist.getTracks().contains(playbackState.getCurrentTrack())) {
+            playlistPlayPauseButton.setText("⏸");
+        } else {
+            playlistPlayPauseButton.setText("▶");
+        }
+    }
 
+    /* Gestione pulsanti */
+
+    /**
+     * @brief Gestisce l'avvio della riproduzione dell'intera playlist o il cambio di stato pausa/play.
+     */
+    @FXML
+    private void handlePlayPlaylist(ActionEvent event) {
+        if (currentPlaylist == null || currentPlaylist.getTracks().isEmpty()) {
+            showAlert(AlertType.WARNING, "Empty Playlist", "This playlist has no tracks to play.");
+            return;
+        }
+        
+        String status = playbackState.getStatusName();
+        if (playbackState.getCurrentTrack() != null && currentPlaylist.getTracks().contains(playbackState.getCurrentTrack())) {
+            if ("Playing".equals(status)) {
+                playbackController.pause();
+            } else {
+                playbackController.resume();
+            }
+        } else {
+            try {
+                playbackController.play(currentPlaylist);
+            } catch (IllegalArgumentException e) {
+                showAlert(AlertType.ERROR, "Playback Error", e.getMessage());
+            }
+        }
+    }
+
+    /**
+     * @brief Apre la schermata della libreria globale per consentire l'aggiunta di un nuovo brano.
+     */
     @FXML
     private void handleAddTrack(ActionEvent event) {
         try {
             TrackLibraryViewController controller = App.setRootAndGetController("library/TrackLibraryView");
             controller.initSelectionMode(this.currentPlaylist, this.playlistController);
         } catch (IOException e) {
-            System.err.println("Errore nella navigazione a TrackLibraryView: " + e.getMessage());
             e.printStackTrace();
         }
     }
 
     /**
-     * Gestisce la pressione del pulsante "rimuovi traccia".
-     * Recupera la traccia selezionata dalla lista della playlist, mostra un popup di conferma e, solo in caso di conferma
-     * dell'utente, procede con la rimozione della traccia dalla playlist.
-     * 
-     * @see PlaylistController#removeTrackFromPlaylist(Track, Playlist)
-     * 
-     */
-    @FXML
-    private void handleRemoveTrack(ActionEvent event){
-       Track selectedTrack = playlistTrackListView.getSelectionModel().getSelectedItem();
-    if (selectedTrack == null) {
-        showAlert(AlertType.WARNING, "Nessuna traccia selezionata",
-                  "Seleziona una traccia dalla lista prima di rimuoverla.");
-        return;
-    }
-
-    Alert confirm = new Alert(AlertType.CONFIRMATION);
-    confirm.setTitle("Conferma rimozione");
-    confirm.setHeaderText("Rimuovi traccia");
-    confirm.setContentText("Sicuro di voler rimuovere \"" + selectedTrack.getTitle() 
-                           + "\" dalla playlist \"" + currentPlaylist.getName() + "\"?");
-
-    Optional<ButtonType> result = confirm.showAndWait();
-    if (result.isPresent() && result.get() == ButtonType.OK) {
-        playlistController.removeTrackFromPlaylist(selectedTrack, currentPlaylist);
-        refresh();
-    }
-    }
-
-    /**
-     * Gestisce la pressione del pulsante "<--" (torna alla Home).
-     * 
+     * @brief Rimuove gli osservatori e ritorna in modo sicuro alla schermata Home.
+     * @details Previene i memory leak scollegando sia questo controller che il sotto-controller del player.
      */
     @FXML
     private void handleGoBack(ActionEvent event) {
         try {
             this.playlistLibrary.removeObserver(this);
+            this.playbackState.removeObserver(this);
+            if (this.mediaPlayerController != null) {
+                this.mediaPlayerController.cleanup();
+            }
             App.setRoot("home/Home");
         } catch (IOException e) {
-            System.err.println("Errore nella navigazione alla Home: " + e.getMessage());
             e.printStackTrace();
         }
     }
 
+    /* Pop-up */
+
     /**
-     * Mostra un popup di Alert con tipo, titolo e messaggio specificati.
-     *
-     * @param type    Il tipo di Alert (ERROR, WARNING, ecc.).
-     * @param title   Il titolo del popup.
-     * @param message Il messaggio da mostrare nel corpo del popup.
+     * @brief Chiede conferma all'utente ed elimina il brano selezionato dalla playlist.
+     */
+    private void handleRemoveTrack(Track track) {
+        if (track == null) return;
+        
+        Alert confirm = new Alert(AlertType.CONFIRMATION);
+        confirm.setTitle("Confirm Removal");
+        confirm.setHeaderText("Remove Track");
+        confirm.setContentText("Are you sure you want to remove \"" + track.getTitle() + "\"?");
+
+        DialogUtils.personalizza(confirm, trackTable, "🗑", "#FF4C30");
+
+        Optional<ButtonType> result = confirm.showAndWait();
+        if (result.isPresent() && result.get() == ButtonType.OK) {
+            playlistController.removeTrackFromPlaylist(track, currentPlaylist);
+            refresh();
+        }
+    }
+
+    /**
+     * @brief Crea e mostra una finestra di avviso o errore personalizzata con il tema scuro.
      */
     private void showAlert(AlertType type, String title, String message) {
         Alert alert = new Alert(type, message, ButtonType.OK);
         alert.setTitle(title);
         alert.setHeaderText(title);
+        DialogUtils.personalizza(alert, trackTable, type == AlertType.ERROR ? "❌" : "⚠", type == AlertType.ERROR ? "#FF4C30" : "#FF6E57");
         alert.showAndWait();
-    }
-
-    /**
-     * Gestisce la pressione del pulsante "Rinomina".
-     * Mostra un dialogo testuale per inserire il nuovo nome, poi delega
-     * l'operazione al {@link PlaylistController#renamePlaylist(Playlist, String)}.
-     * In caso di errore di validazione, mostra un Alert all'utente.
-     *
-     * @param event L'evento di click sul pulsante.
-     */
-    @FXML
-    private void handleRenamePlaylist(ActionEvent event) {
-        // Dialogo di input testuale
-        javafx.scene.control.TextInputDialog dialog = new javafx.scene.control.TextInputDialog(currentPlaylist.getName());
-        dialog.setTitle("Rinomina Playlist");
-        dialog.setHeaderText("Inserisci il nuovo nome per la playlist:");
-        dialog.setContentText("Nuovo nome:");
-
-        Optional<String> result = dialog.showAndWait();
-
-        result.ifPresent(newName -> {
-            try {
-                playlistController.renamePlaylist(currentPlaylist, newName);
-            } catch (IllegalArgumentException e) {
-                showAlert(AlertType.ERROR, "Rinomina non riuscita", e.getMessage());
-            }
-        });
     }
 }
