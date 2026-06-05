@@ -1,6 +1,6 @@
-/* ========================================== */
-/* IMPOSTAZIONI GLOBALI DI INTERFACCIA        */
-/* ========================================== */
+/* ========================================================================== */
+/* 1. IMPOSTAZIONI GLOBALI DI INTERFACCIA E SFONDI                            */
+/* ========================================================================== */
 .main-root {
     -fx-background-color: #050505;
     -fx-snap-to-pixel: true;
@@ -26,9 +26,9 @@
     -fx-border-width: 0;
 }
 
-/* ========================================== */
-/* STRUTTURE E CONTENITORI PRINCIPALI         */
-/* ========================================== */
+/* ========================================================================== */
+/* 2. CONTENITORI PRINCIPALI (SIDEBAR E PLAYER BAR)                           */
+/* ========================================================================== */
 .sidebar {
     -fx-background-color: #0A0A0A;
     -fx-border-color: #1A1A1A;
@@ -41,9 +41,9 @@
     -fx-border-width: 1px 0 0 0;
 }
 
-/* ========================================== */
-/* COMPONENTI TIPOGRAFICI E LABEL DI SEZIONE  */
-/* ========================================== */
+/* ========================================================================== */
+/* 3. TIPOGRAFIA, TITOLI E ICONE DI TESTO                                     */
+/* ========================================================================== */
 .brand-title {
     -fx-text-fill: #FFFFFF;
     -fx-font-weight: bold;
@@ -66,30 +66,20 @@
     -fx-background-color: linear-gradient(to bottom, #FF4C30, #FF6E57);
 }
 
-/* ========================================== */
-/* CLASS UTILITY PER DIMENSIONI DELLE ICONE   */
-/* ========================================== */
+.header-icon-label {
+    -fx-text-fill: #5E27BF;
+    -fx-font-size: 32px;
+    -fx-font-weight: bold;
+}
+
 .icon-small   { -fx-font-size: 16px; }
 .icon-medium  { -fx-font-size: 20px; }
 .icon-large   { -fx-font-size: 28px; }
 .icon-xlarge  { -fx-font-size: 30px; }
 
-/* ========================================== */
-/* CONTROLLI DI PROGRESSO E SLIDER            */
-/* ========================================== */
-.player-progress {
-    -fx-accent: #5E27BF;
-    -fx-control-inner-background: #1A1A1A;
-}
-
-.player-slider {
-    -fx-control-inner-background: #1A1A1A;
-    -fx-accent: #FF4C30;
-}
-
-/* ========================================== */
-/* PULSANTI DI INTERFACCIA E STATI DI HOVER   */
-/* ========================================== */
+/* ========================================================================== */
+/* 4. PULSANTI E STATI DI INTERAZIONE (HOVER E CLICK)                         */
+/* ========================================================================== */
 .sidebar-btn, 
 .player-btn {
     -fx-background-color: transparent;
@@ -137,9 +127,101 @@
     -fx-background-color: linear-gradient(to bottom right, #7B42DB, #FF6E57);
 }
 
-/* ========================================== */
-/* CARD PLAYLIST DINAMICHE E COMPONENTI INTERNI*/
-/* ========================================== */
+.play-pause-btn {
+    -fx-background-color: transparent !important;
+    -fx-background-insets: 0 !important;
+    -fx-background-radius: 0 !important;
+    -fx-padding: 0 !important;
+    -fx-text-fill: #888888 !important;   
+    -fx-font-size: 20px !important;      
+    -fx-font-weight: bold !important;
+    -fx-alignment: center !important;
+}
+
+.play-pause-btn:hover,
+.play-pause-btn:focused,
+.play-pause-btn:armed {
+    -fx-background-color: transparent !important;
+    -fx-text-fill: #FFFFFF !important;    
+    -fx-padding: 0 !important;
+}
+
+.play-playlist-circle-btn {
+    -fx-background-color: #FFFFFF !important;
+    -fx-text-fill: #050505 !important;
+    -fx-pref-width: 62px;
+    -fx-min-width: 62px;
+    -fx-max-width: 62px;
+    -fx-pref-height: 62px;
+    -fx-min-height: 62px;
+    -fx-max-height: 62px;
+    -fx-background-radius: 50% !important;
+    -fx-font-size: 22px !important;
+    -fx-alignment: center !important;
+    -fx-padding: 0 !important; 
+}
+
+.play-playlist-circle-btn:hover {
+    -fx-effect: dropshadow(three-pass-box, rgba(255, 255, 255, 0.3), 15, 0, 0, 0);
+    -fx-scale-x: 1.05;
+    -fx-scale-y: 1.05;
+}
+
+.home-back-btn {
+    -fx-background-color: transparent !important;
+    -fx-background-insets: 0 !important;
+    -fx-background-radius: 0 !important;
+    -fx-padding: 0 !important;
+    -fx-text-fill: #888888; 
+    -fx-font-size: 26px;    
+    -fx-cursor: hand;
+}
+
+.home-back-btn:hover {
+    -fx-text-fill: #FFFFFF !important; 
+    -fx-effect: dropshadow(three-pass-box, rgba(255, 255, 255, 0.2), 10, 0, 0, 0);
+}
+
+.cell-inline-delete-btn {
+    -fx-background-color: transparent;
+    -fx-text-fill: #666666;
+    -fx-font-size: 18px;
+    -fx-cursor: hand;
+}
+
+.cell-inline-delete-btn:hover {
+    -fx-text-fill: #FF4C30 !important;
+}
+
+/* ========================================================================== */
+/* 5. COMPONENTI DELLA BARRA DEL PLAYER (SLIDER E TESTI BRANO)                */
+/* ========================================================================== */
+.player-progress {
+    -fx-accent: #5E27BF;
+    -fx-control-inner-background: #1A1A1A;
+}
+
+.player-slider {
+    -fx-control-inner-background: #1A1A1A;
+    -fx-accent: #FF4C30;
+}
+
+.cell-title-label {
+    -fx-text-fill: #FFFFFF;
+    -fx-font-weight: bold;
+    -fx-font-size: 15px;
+}
+
+.cell-author-label {
+    -fx-text-fill: #888888;
+    -fx-font-size: 12px;
+    -fx-font-weight: normal;
+    -fx-padding: 2px 0 0 0;
+}
+
+/* ========================================================================== */
+/* 6. CARD DELLE PLAYLIST (GRIGLIA DELLA SCHERMATA HOME)                      */
+/* ========================================================================== */
 .playlist-card {
     -fx-background-color: #121212;
     -fx-background-radius: 8px;
@@ -189,9 +271,9 @@
     -fx-text-fill: #FFFFFF !important;
 }
 
-/* ========================================== */
-/* CONTEXT MENU (MENU A TENDA DEI TRE PALLINI)*/
-/* ========================================== */
+/* ========================================================================== */
+/* 7. MENU CONTESTUALI (TENDINE DELLE OPZIONI)                                */
+/* ========================================================================== */
 .context-menu {
     -fx-background-color: #1A1A1A;
     -fx-font-size: 15px;
@@ -225,31 +307,9 @@
     -fx-text-fill: #FF4C30;
 }
 
-/* ========================================== */
-/* PULSANTE SPECIFICO DI PLAY / PAUSA         */
-/* ========================================== */
-.play-pause-btn {
-    -fx-background-color: transparent !important;
-    -fx-background-insets: 0 !important;
-    -fx-background-radius: 0 !important;
-    -fx-padding: 0 !important;
-    -fx-text-fill: #888888 !important;   
-    -fx-font-size: 20px !important;      
-    -fx-font-weight: bold !important;
-    -fx-alignment: center !important;
-}
-
-.play-pause-btn:hover,
-.play-pause-btn:focused,
-.play-pause-btn:armed {
-    -fx-background-color: transparent !important;
-    -fx-text-fill: #FFFFFF !important;    
-    -fx-padding: 0 !important;
-}
-
-/* ========================================== */
-/* DIALOG PANE E ALERT (FINESTRE DI POPUP)    */
-/* ========================================== */
+/* ========================================================================== */
+/* 8. FINESTRE DI DIALOGO E POPUP (ALERT E INPUT)                             */
+/* ========================================================================== */
 .dialog-pane {
     -fx-background-color: #0A0A0A;
     -fx-border-color: #1A1A1A;
@@ -258,7 +318,6 @@
     -fx-background-radius: 8px;
 }
 
-/* Allineamento e spaziatura del contenitore dell'icona personalizzata */
 .dialog-pane .graphic-container {
     -fx-padding: 10px 15px 10px 10px;
     -fx-alignment: center;
@@ -274,7 +333,6 @@
     -fx-border-width: 0 0 1px 0;
 }
 
-/* Ristrutturazione stilistica dei pulsanti OK / Annulla dei popup */
 .dialog-pane .button {
     -fx-background-color: #1A1A1A;
     -fx-text-fill: #FFFFFF;
@@ -297,7 +355,6 @@
     -fx-border-color: #5E27BF;
 }
 
-/* Casella di input di testo all'interno dei dialoghi */
 .dialog-pane .text-field {
     -fx-background-color: #1A1A1A;
     -fx-text-fill: #FFFFFF;
@@ -309,4 +366,63 @@
 
 .dialog-pane .text-field:focused {
     -fx-border-color: #5E27BF;
+}
+
+/* ========================================================================== */
+/* 9. TABELLA DEI BRANI (SCHERMATA DETTAGLI PLAYLIST)                         */
+/* ========================================================================== */
+.track-table {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-padding: 0;
+}
+
+.track-table .column-header-background {
+    -fx-max-height: 0;
+    -fx-pref-height: 0;
+    -fx-min-height: 0;
+    -fx-padding: 0;
+    visibility: hidden;
+}
+
+.track-table .table-row-cell {
+    -fx-background-color: #121212;
+    -fx-border-width: 0 0 1px 0; 
+    -fx-border-color: #1A1A1A;
+    -fx-cell-size: 55px; 
+    -fx-cursor: hand;
+}
+
+.track-table .table-row-cell:hover {
+    -fx-background-color: #1A1A1A;
+}
+
+.track-table .table-row-cell:selected {
+    -fx-background-color: #202020;
+    -fx-border-width: 1px;
+    -fx-border-color: #5E27BF;
+}
+
+.track-table .table-cell {
+    -fx-text-fill: #FFFFFF;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-alignment: center-left;
+    -fx-border-color: transparent; 
+    -fx-padding: 0 15px; 
+}
+
+.track-table .table-cell:nth-child(2),
+.track-table .table-cell:nth-child(3),
+.track-table .table-cell:nth-child(4) {
+    -fx-text-fill: #888888;
+    -fx-font-weight: normal;
+}
+
+.track-table .table-cell:nth-child(5) {
+    -fx-alignment: center;
+}
+
+.track-table .placeholder {
+    -fx-background-color: transparent;
 }

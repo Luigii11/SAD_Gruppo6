@@ -1,14 +1,16 @@
 /**
  * @file HomeController.java
- * Controller della vista Home.
- * Coordina la visualizzazione delle playlist e risponde agli eventi dell'interfaccia utente.
- * * @see PlaylistController
- * @author EmanuelaGraziuso, LuigiAutorino
+ * @brief Controller principale per la schermata Home.
+ * @details Si occupa di mostrare a schermo tutte le playlist dell'utente e di gestire la barra 
+ * del player audio integrata. Si aggiorna da solo ogni volta che viene creata o eliminata una playlist.
+ * * @author EmanuelaGraziuso, LuigiAutorino
  */
+
 package it.unisa.diem.sad_gruppo6.controller.ui.home;
 
 import it.unisa.diem.sad_gruppo6.App;
 import it.unisa.diem.sad_gruppo6.controller.business.playlist.PlaylistController;
+import it.unisa.diem.sad_gruppo6.controller.ui.player.MediaPlayerController;
 import it.unisa.diem.sad_gruppo6.controller.ui.playlist.PlaylistCreationDialogController;
 import it.unisa.diem.sad_gruppo6.controller.ui.playlist.PlaylistDetailsController;
 import it.unisa.diem.sad_gruppo6.controller.ui.utils.DialogUtils;
@@ -51,18 +53,21 @@ import javafx.scene.layout.HBox;
  */
 public class HomeController implements PlaylistLibraryObserver {
 
-    @FXML private TilePane playlistTilePane;
-    @FXML private Button playPauseButton;
+    // Attributi
 
+    /* Componenti grafici */ 
+    @FXML private TilePane playlistTilePane;
+    @FXML private MediaPlayerController mediaPlayerController;
+
+    /* Dati e componenti logici */ 
     private PlaylistLibrary playlistLibrary;
     private PlaylistController playlistController;
     private Playlist selectedPlaylist = null;
-    private boolean isPlaying = false;
 
     /**
-     * @brief Inizializza automaticamente il controller dopo il caricamento del file FXML.
-     * @details Recupera le istanze dei Singleton del model, istanzia il controller di business,
-     * effettua la registrazione dell'observer sul catalogo e avvia il primo rendering.
+     * @brief Metodo di avvio chiamato in automatico da JavaFX.
+     * @details Recupera i dati salvati (i Singleton) e prepara la schermata disegnando 
+     * le playlist per la prima volta.
      */
     @FXML
     public void initialize() {
@@ -76,23 +81,27 @@ public class HomeController implements PlaylistLibraryObserver {
     }
 
     /**
-     * @brief Esegue lo switch di scena per mostrare i dettagli di una specifica playlist.
-     * @param[in] playlist L'oggetto Playlist di cui visualizzare il contenuto informativo e le tracce.
-     * @see PlaylistDetailsController
+     * @brief Cambia schermata per mostrare le canzoni dentro una specifica playlist.
+     * @param playlist La playlist cliccata dall'utente.
      */
     private void openPlaylistDetails(Playlist playlist) {
         try {
+            // Prima di cambiare pagina scolleghiamo la Home e il Player per liberare memoria
+            this.playlistLibrary.removeObserver(this);
+            if (this.mediaPlayerController != null) {
+                this.mediaPlayerController.cleanup();
+            }
+            
             PlaylistDetailsController controller = App.setRootAndGetController("playlist/PlaylistDetails");
             controller.init(playlist, this.playlistController, TrackLibrary.getInstance(), this.playlistLibrary);
         } catch (IOException e) {
-            System.err.println("Errore nel caricamento di PlaylistDetails.fxml: " + e.getMessage());
+            System.err.println("Error loading PlaylistDetails.fxml: " + e.getMessage());
             e.printStackTrace();
         }
     } 
 
     /**
-     * @brief Callback invocata dal model quando si verifica un cambiamento nella libreria delle playlist.
-     * @details Soddisfa il contratto dell'interfaccia {@link PlaylistLibraryObserver} forzando il refresh visivo.
+     * @brief Reagisce in automatico se la libreria delle playlist subisce modifiche.
      */
     @Override
     public void onPlaylistLibraryChanged() {
@@ -100,9 +109,7 @@ public class HomeController implements PlaylistLibraryObserver {
     }
 
     /**
-     * @brief Rigenera la griglia visiva delle playlist svuotando i vecchi componenti.
-     * @details Pulisce il TilePane, azzera la selezione corrente e cicla la lista aggiornata
-     * delle playlist per ricostruire le card programmaticamente.
+     * @brief Svuota la griglia e ridisegna tutte le playlist aggiornate.
      */
     private void refresh() {
         playlistTilePane.getChildren().clear();
@@ -115,11 +122,10 @@ public class HomeController implements PlaylistLibraryObserver {
     }
 
     /**
-     * @brief Fabbrica programmaticamente il contenitore grafico (VBox) di una singola playlist.
-     * @details Configura le classi CSS esterne, la barra superiore con i tre pallini per il 
-     * menu contestuale ("Rinomina" ed "Elimina"), l'icona centrale e l'handler di selezione al click.
-     * @param[in] playlist L'entità di dominio Playlist da mappare all'interno del componente grafico.
-     * @return VBox Il nodo grafico preconfigurato pronto per essere inserito nel TilePane.
+     * @brief Crea il "quadrato" (Card) grafico per una singola playlist.
+     * @details Imposta l'icona, il nome, i pulsanti per rinominare/eliminare e l'azione per il doppio click.
+     * @param playlist I dati della playlist da trasformare in grafica.
+     * @return VBox Il contenitore pronto per essere aggiunto alla schermata.
      */
     private VBox creaCardPlaylist(Playlist playlist) {
         VBox card = new VBox();
@@ -136,13 +142,13 @@ public class HomeController implements PlaylistLibraryObserver {
 
         ContextMenu contextMenu = new ContextMenu();
 
-        MenuItem renameItem = new MenuItem("Rinomina ✎");
+        MenuItem renameItem = new MenuItem("Rename ✎");
         renameItem.setOnAction(e -> {
             this.selectedPlaylist = playlist;
             handleRenamePlaylist(e);
         });
 
-        MenuItem deleteItem = new MenuItem("Elimina 🗑");
+        MenuItem deleteItem = new MenuItem("Delete 🗑");
         deleteItem.getStyleClass().add("delete-menu-item"); 
         deleteItem.setOnAction(e -> {
             this.selectedPlaylist = playlist;
@@ -175,13 +181,16 @@ public class HomeController implements PlaylistLibraryObserver {
 
         card.getChildren().addAll(topBar, iconBox, textBox);
 
+        // Gestione del click sulla Card
         card.setOnMouseClicked(event -> {
+            // Rimuove il bordo colorato dalle altre card e lo aggiunge a questa
             playlistTilePane.getChildren().forEach(node -> 
                 node.getStyleClass().remove("selected")
             );
             card.getStyleClass().add("selected");
             this.selectedPlaylist = playlist;
 
+            // Se l'utente fa doppio click, entra nella playlist
             if (event.getClickCount() == 2) {
                 openPlaylistDetails(playlist);
             }
@@ -190,27 +199,10 @@ public class HomeController implements PlaylistLibraryObserver {
         return card;
     }
 
-    /**
-     * @brief Gestisce l'evento di pressione del pulsante centrale Play/Pausa.
-     * @details Effettua il toggle dello stato logico 'isPlaying' e aggiorna l'icona
-     * del pulsante usando i caratteri multimediali unificati coerenti.
-     * @param[in] event L'evento di azione generato dal click sul pulsante.
-     */
-    @FXML
-    private void handlePlayPause(ActionEvent event) {
-        this.isPlaying = !this.isPlaying;
-        if (this.isPlaying) {
-            playPauseButton.setText("⏸");
-        } else {
-            playPauseButton.setText("⏵");
-        }
-    }
+    /* Azioni sui pulsanti dell'interfaccia */ 
 
     /**
-     * @brief Gestisce il flusso per la ridenominazione di una playlist selezionata.
-     * @details Apre un {@link TextInputDialog}, eredita dinamicamente lo stile scuro tramite
-     * {@link DialogUtils} e, se confermato, invoca il controller di business.
-     * @param[in] event L'evento di azione generato dal click sulla voce di menu.
+     * @brief Apre un pop-up per cambiare il nome alla playlist selezionata.
      */
     @FXML
     private void handleRenamePlaylist(ActionEvent event) {
@@ -218,9 +210,9 @@ public class HomeController implements PlaylistLibraryObserver {
         if (selected == null) return;
 
         TextInputDialog dialog = new TextInputDialog(selected.getName());
-        dialog.setTitle("Rinomina Playlist");
-        dialog.setHeaderText("Modifica il nome per \"" + selected.getName() + "\"");
-        dialog.setContentText("Nuovo nome:");
+        dialog.setTitle("Rename Playlist");
+        dialog.setHeaderText("Enter new name for \"" + selected.getName() + "\"");
+        dialog.setContentText("New name:");
         
         DialogUtils.personalizza(dialog, playlistTilePane, "✎", "#5E27BF");
 
@@ -228,32 +220,29 @@ public class HomeController implements PlaylistLibraryObserver {
         result.ifPresent(newName -> {
             try {
                 playlistController.renamePlaylist(selected, newName);
-                refresh(); 
+                refresh(); // Aggiorna visivamente il nuovo nome
             } catch (IllegalArgumentException e) {
-                mostraAlertErrore("Impossibile rinominare la playlist", e.getMessage());
+                showErrorAlert("Rename failed", e.getMessage());
             }
         });
     }
 
     /**
-     * @brief Gestisce il flusso per la cancellazione definitiva di una playlist.
-     * @details Mostra un alert di conferma personalizzato. In caso di esito positivo,
-     * demanda la rimozione logico-fisica al controller di business.
-     * @param[in] event L'evento di azione generato dal click sul comando Elimina.
+     * @brief Chiede conferma all'utente e poi cancella la playlist selezionata.
      */
     @FXML
     private void handleDeletePlaylist(ActionEvent event) {
         Playlist selected = this.selectedPlaylist;
 
         if (selected == null) {
-            mostraAlertWarning("Nessuna playlist selezionata", "Seleziona una playlist cliccando sulla card prima di eliminarla.");
+            showWarningAlert("No playlist selected", "Please select a playlist by clicking on its card before deleting.");
             return;
         }
 
         Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
-        confirm.setTitle("Elimina playlist");
-        confirm.setHeaderText("Sei sicuro?");
-        confirm.setContentText("Vuoi eliminare la playlist \"" + selected.getName() + "\"?");
+        confirm.setTitle("Confirm Deletion");
+        confirm.setHeaderText("Delete Playlist");
+        confirm.setContentText("Are you sure you want to delete the playlist \"" + selected.getName() + "\"?");
         
         DialogUtils.personalizza(confirm, playlistTilePane, "🗑", "#FF4C30");
         
@@ -261,31 +250,31 @@ public class HomeController implements PlaylistLibraryObserver {
         if (result.isPresent() && result.get() == ButtonType.OK) {
             try {
                 playlistController.deletePlaylist(selected);
-                refresh(); 
             } catch (IllegalArgumentException e) {
-                mostraAlertErrore("Impossibile eliminare la playlist", e.getMessage());
+                showErrorAlert("Deletion failed", e.getMessage());
             }
         }
     }
 
     /**
-     * @brief Reindirizza l'utente verso la vista contenente la libreria di tutte le tracce.
-     * @param[in] event L'evento di azione associato al click sul pulsante (☰) della barra laterale.
+     * @brief Passa alla schermata che mostra TrackLibrary.
      */
     @FXML
     private void handleGoToAllTracks(ActionEvent event) {
         try {
+            this.playlistLibrary.removeObserver(this);
+            if (this.mediaPlayerController != null) {
+                this.mediaPlayerController.cleanup();
+            }
             App.setRoot("library/TrackLibraryView");
         } catch (IOException e) {
-            System.err.println("Errore nella navigazione a TrackLibraryView: " + e.getMessage());
+            System.err.println("Error routing to TrackLibraryView: " + e.getMessage());
             e.printStackTrace();
         }
     }
 
     /**
-     * @brief Carica e mostra in modalità modale il dialogo per la creazione di una nuova playlist.
-     * @param[in] event L'evento di azione associato al click sul pulsante (+) della sidebar.
-     * @see PlaylistCreationDialogController
+     * @brief Apre la finestra CreatePlaylist.
      */
     @FXML
     private void handleGoToCreatePlaylist(ActionEvent event) {
@@ -297,48 +286,43 @@ public class HomeController implements PlaylistLibraryObserver {
             dialogController.setPlaylistController(this.playlistController); 
             
             Stage dialogStage = new Stage();
-            dialogStage.setTitle("Crea nuova playlist");
+            dialogStage.setTitle("Create new playlist");
             dialogStage.setScene(new Scene(root));
             Stage owner = (Stage) ((Node) event.getSource()).getScene().getWindow();
             dialogStage.initOwner(owner);
             dialogStage.initModality(Modality.APPLICATION_MODAL);
             
             dialogStage.showAndWait(); 
-            refresh(); 
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
+    /* Gestione Alert */
+
     /**
-     * @brief Helper privato per l'istanza e la visualizzazione di alert di errore bloccante.
-     * @details Genera un pop-up di tipo ERROR, applicando la sintonizzazione scura e l'icona personalizzata.
-     * @param[in] titoloHeader Il testo breve da inserire nell'intestazione del popup.
-     * @param[in] messaggioContenuto Il testo descrittivo dettagliato dell'eccezione catturata.
+     * @brief Mostra un pop-up di errore con il tema scuro personalizzato.
+     * @param titoloHeader Il titolo principale dell'errore.
+     * @param messaggioContenuto Il dettaglio che spiega cosa è andato storto.
      */
-    private void mostraAlertErrore(String titoloHeader, String messaggioContenuto) {
+    private void showErrorAlert(String titoloHeader, String messaggioContenuto) {
         Alert error = new Alert(Alert.AlertType.ERROR, messaggioContenuto, ButtonType.OK);
-        error.setTitle("Operazione non consentita");
+        error.setTitle("Operation failed");
         error.setHeaderText(titoloHeader);
-        
         DialogUtils.personalizza(error, playlistTilePane, "❌", "#FF4C30");
-        
         error.showAndWait();
     }
 
     /**
-     * @brief Helper privato per l'istanza e la visualizzazione di alert di avviso non bloccante.
-     * @details Genera un pop-up di tipo WARNING, applicando la sintonizzazione scura e l'icona personalizzata.
-     * @param[in] titoloHeader Il testo breve da inserire nell'intestazione del popup.
-     * @param[in] messaggioContenuto Il testo descrittivo dell'avviso.
+     * @brief Mostra un pop-up di avviso con il tema scuro personalizzato.
+     * @param titoloHeader Il titolo principale dell'avviso.
+     * @param messaggioContenuto Il testo che spiega all'utente cosa deve fare.
      */
-    private void mostraAlertWarning(String titoloHeader, String messaggioContenuto) {
+    private void showWarningAlert(String titoloHeader, String messaggioContenuto) {
         Alert alert = new Alert(Alert.AlertType.WARNING, messaggioContenuto, ButtonType.OK);
         alert.setTitle(titoloHeader);
         alert.setHeaderText(titoloHeader);
-        
         DialogUtils.personalizza(alert, playlistTilePane, "⚠", "#FF6E57");
-        
         alert.showAndWait();
     }
 }

@@ -7,6 +7,7 @@ import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import java.io.IOException;
+import java.util.Locale;
 
 public class App extends Application {
 
@@ -14,6 +15,7 @@ public class App extends Application {
 
     @Override
     public void start(Stage stage) {
+        Locale.setDefault(Locale.ENGLISH);
         try {
             FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("view/home/Home.fxml"));
             Parent root = fxmlLoader.load();
