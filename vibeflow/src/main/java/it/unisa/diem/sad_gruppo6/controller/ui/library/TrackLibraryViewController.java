@@ -2,7 +2,7 @@
  * @file TrackLibraryViewController.java
  * @brief Controller per la visualizzazione dell'intero catalogo musicale.
  * @details Implementa una logica multi-contesto con gestione dinamica dei controlli di inserimento.
- * Rispetta i principi DRY e Single Responsibility separando la configurazione UI dalla logica di navigazione.
+ * Agisce come Observer della TrackLibrary per aggiornare la tabella in tempo reale.
  * @author EmanuelaGraziuso, LuigiAutorino
  */
 
@@ -10,8 +10,6 @@ package it.unisa.diem.sad_gruppo6.controller.ui.library;
 
 import it.unisa.diem.sad_gruppo6.App;
 import it.unisa.diem.sad_gruppo6.controller.business.playback.PlaybackController;
-import it.unisa.diem.sad_gruppo6.controller.business.playlist.PlaylistController;
-import it.unisa.diem.sad_gruppo6.controller.business.track.TrackController;
 import it.unisa.diem.sad_gruppo6.controller.ui.player.MediaPlayerController;
 import it.unisa.diem.sad_gruppo6.controller.ui.playlist.PlaylistDetailsController;
 import it.unisa.diem.sad_gruppo6.controller.ui.utils.DialogUtils;
@@ -45,14 +43,12 @@ import java.io.IOException;
 
 public class TrackLibraryViewController implements TrackLibraryObserver {
 
-    /* Costanti per stile pulsanti */
     private static final String BTN_ICON_STYLE_NORMAL = "-fx-background-color: transparent; -fx-text-fill: #888888; -fx-font-size: 18px; -fx-cursor: hand;";
     private static final String BTN_ICON_STYLE_HOVER  = "-fx-background-color: transparent; -fx-text-fill: #FFFFFF; -fx-font-size: 18px; -fx-cursor: hand;";
     private static final String BTN_ICON_STYLE_DANGER = "-fx-background-color: transparent; -fx-text-fill: #FF4C30; -fx-font-size: 18px; -fx-cursor: hand;";
     private static final String BTN_ADD_STYLE_NORMAL  = "-fx-background-color: transparent; -fx-text-fill: #5E27BF; -fx-font-size: 24px; -fx-font-weight: bold; -fx-cursor: hand;";
     private static final String BTN_ADD_STYLE_DONE    = "-fx-background-color: transparent; -fx-text-fill: #888888; -fx-font-size: 20px;";
 
-    /* Componenti grafici */
     @FXML private Label headerTitleLabel;
     @FXML private Label headerSubtitleLabel;
     @FXML private TableView<Track> trackTable;
@@ -62,20 +58,18 @@ public class TrackLibraryViewController implements TrackLibraryObserver {
     @FXML private TableColumn<Track, String> durationCol;
     @FXML private TableColumn<Track, Void> actionCol;
     @FXML private Button addTrackButton; 
-    
     @FXML private MediaPlayerController mediaPlayerController;
 
-    /* Attributi */
     private TrackLibrary library;
     private PlaybackController playbackController;
     private boolean isSelectionMode = false;
     private Playlist targetPlaylist;
-    private PlaylistController playlistController;
 
     /**
-     * @brief Inizializzazione standard invocata da JavaFX all'avvio della schermata.
-     * @details Prepara la tabella, popola i dati e imposta il comportamento di default (sola lettura/riproduzione).
-     * Registra inoltre il controller come osservatore della TrackLibrary.
+     * @brief Metodo di inizializzazione standard invocato dal framework JavaFX.
+     * @details Configura la TableView, inizializza i controller di business,
+     * registra la classe come Observer della TrackLibrary e definisce 
+     * l'evento di doppio click per avviare la riproduzione sequenziale.
      */
     @FXML
     public void initialize() {
@@ -86,30 +80,27 @@ public class TrackLibraryViewController implements TrackLibraryObserver {
         
         setupTableView();
         setupBrowsingColumn();
-
         onLibraryChanged();
 
         trackTable.setOnMouseClicked(event -> {
             if (event.getClickCount() == 2 && !isSelectionMode) {
                 Track selectedTrack = trackTable.getSelectionModel().getSelectedItem();
                 if (selectedTrack != null) {
-                    playbackController.play(selectedTrack);
+                    // Avvia la riproduzione passando l'intera lista e il brano di partenza
+                    playbackController.play(library.getTracks(), selectedTrack);
                 }
             }
         });
     }
 
     /**
-     * @brief Attiva la modalità di "Selezione Brani" per aggiungerli a una playlist.
-     * @details Modifica dinamicamente l'interfaccia: nasconde il bottone di creazione di nuove tracce, 
-     * aggiorna il titolo della pagina e sostituisce la colonna delle azioni per mostrare i tasti "+".
-     * @param targetPlaylist La playlist di destinazione a cui aggiungere i brani.
-     * @param playlistController Il controller di business che gestirà l'aggiunta.
+     * @brief Configura la UI per funzionare come schermata di selezione brani.
+     * @details Nasconde i pulsanti di creazione globale e sostituisce i tasti di modifica con il tasto "+".
+     * @param targetPlaylist La playlist a cui l'utente intende aggiungere i brani scelti.
      */
-    public void initSelectionMode(Playlist targetPlaylist, PlaylistController playlistController) {
+    public void initSelectionMode(Playlist targetPlaylist) {
         this.isSelectionMode = true;
         this.targetPlaylist = targetPlaylist;
-        this.playlistController = playlistController;
 
         headerTitleLabel.setText("Add to: " + targetPlaylist.getName());
         headerSubtitleLabel.setText("Select tracks to add to your playlist");
@@ -122,12 +113,8 @@ public class TrackLibraryViewController implements TrackLibraryObserver {
         setupSelectionColumn(); 
     }
 
-    /* Configurazione tabella */
-
     /**
-     * @brief Configura il binding dei dati tra la TableView e gli oggetti Track.
-     * @details Associa le proprietà delle tracce (titolo, autore, metadati, durata) 
-     * alle rispettive colonne visive, formattando le stringhe per l'interfaccia.
+     * @brief Imposta le logiche di estrazione dati per le colonne della tabella.
      */
     private void setupTableView() {
         titleCol.setCellValueFactory(data -> new SimpleStringProperty("♫   " + data.getValue().getTitle()));
@@ -146,9 +133,8 @@ public class TrackLibraryViewController implements TrackLibraryObserver {
     }
 
     /**
-     * @brief Configura la colonna delle azioni per la visualizzazione standard (Libreria globale).
-     * @details Genera dinamicamente per ogni riga i pulsanti di "Modifica" (✎) ed "Eliminazione" (🗑)
-     * e gestisce i relativi effetti di hover e click.
+     * @brief Configura la colonna "Azioni" per la modalità di navigazione standard.
+     * @details Inserisce dinamicamente in ogni riga i bottoni "Modifica" e "Rimuovi".
      */
     private void setupBrowsingColumn() {
         actionCol.setCellFactory(col -> new TableCell<>() {
@@ -158,13 +144,11 @@ public class TrackLibraryViewController implements TrackLibraryObserver {
             
             {
                 container.setAlignment(Pos.CENTER);
-                
                 editBtn.setStyle(BTN_ICON_STYLE_NORMAL);
                 deleteBtn.setStyle(BTN_ICON_STYLE_NORMAL);
                 
                 editBtn.setOnMouseEntered(e -> editBtn.setStyle(BTN_ICON_STYLE_HOVER));
                 editBtn.setOnMouseExited(e -> editBtn.setStyle(BTN_ICON_STYLE_NORMAL));
-                
                 deleteBtn.setOnMouseEntered(e -> deleteBtn.setStyle(BTN_ICON_STYLE_DANGER));
                 deleteBtn.setOnMouseExited(e -> deleteBtn.setStyle(BTN_ICON_STYLE_NORMAL));
                 
@@ -181,9 +165,8 @@ public class TrackLibraryViewController implements TrackLibraryObserver {
     }
 
     /**
-     * @brief Configura la colonna delle azioni per la modalità selezione (Aggiunta a playlist).
-     * @details Sostituisce le opzioni di modifica/eliminazione con un pulsante "+". 
-     * Se la traccia è già presente nella playlist di destinazione, mostra una spunta (✓) disabilitata.
+     * @brief Configura la colonna "Azioni" per la modalità di selezione (Aggiunta a playlist).
+     * @details Genera un pulsante "+" e controlla se la traccia è già presente nella playlist.
      */
     private void setupSelectionColumn() {
         actionCol.setCellFactory(col -> new TableCell<>() {
@@ -197,10 +180,7 @@ public class TrackLibraryViewController implements TrackLibraryObserver {
                     try {
                         new AddTrackToPlaylistCommand(targetPlaylist, track).execute();
                         PlaylistLibrary.getInstance().updatePlaylist(targetPlaylist);
-                        
-                        // Ritona immediatamente ai Dettagli della Playlist
                         handleGoBack(null);
-                        
                     } catch (IllegalArgumentException ex) {
                         showError("Cannot add track", ex.getMessage());
                     }
@@ -229,11 +209,9 @@ public class TrackLibraryViewController implements TrackLibraryObserver {
         });
     }
 
-    /* Interfaccia observer */
-    
     /**
-     * @brief Callback invocata quando una singola traccia viene aggiunta.
-     * @param track La traccia appena aggiunta.
+     * @brief Metodo richiamato dall'Observer quando viene inserita una nuova traccia.
+     * @param track La nuova traccia aggiunta alla TrackLibrary.
      */
     @Override
     public void onTrackAdded(Track track) {
@@ -241,7 +219,7 @@ public class TrackLibraryViewController implements TrackLibraryObserver {
     }
 
     /**
-     * @brief Ricarica i dati della TableView quando la libreria globale subisce modifiche.
+     * @brief Metodo richiamato dall'Observer per aggiornare l'intera tabella.
      */
     @Override
     public void onLibraryChanged() {
@@ -250,11 +228,8 @@ public class TrackLibraryViewController implements TrackLibraryObserver {
         }
     }
 
-    /* Logica di navigazione */
-
     /**
-     * @brief Esegue la deregistrazione sicura prima di abbandonare la vista.
-     * @details Rimuove gli observer e invoca il cleanup del player per evitare memory leak.
+     * @brief Gestisce le operazioni di pulizia della memoria prima del cambio scena.
      */
     private void prepareForNavigation() {
         this.library.removeObserver(this);
@@ -264,15 +239,14 @@ public class TrackLibraryViewController implements TrackLibraryObserver {
     }
 
     /**
-     * @brief Naviga verso la schermata di creazione di una nuova traccia.
+     * @brief Genera e apre la finestra di dialogo modale per la creazione di una nuova traccia.
+     * @param event L'evento di click sul pulsante "Aggiungi Traccia".
      */
     @FXML
     private void handleAddTrack(ActionEvent event) {
         try {
             FXMLLoader loader = new FXMLLoader(App.class.getResource("/it/unisa/diem/sad_gruppo6/view/library/TrackCreationDialog.fxml"));
             Parent root = loader.load();
-
-            TrackCreationDialogController dialogController = loader.getController();
 
             Stage dialogStage = new Stage();
             dialogStage.setTitle("Create Track");
@@ -291,8 +265,8 @@ public class TrackLibraryViewController implements TrackLibraryObserver {
     }
 
     /**
-     * @brief Prepara la traccia per la modifica e apre il popup dedicato.
-     * @param track La traccia selezionata per la modifica.
+     * @brief Genera e apre la finestra di dialogo modale per la modifica di una traccia esistente.
+     * @param track La traccia da modificare passata in ingresso al controller del popup.
      */
     private void handleEditButtonClick(Track track) {
         if (track == null) return;
@@ -321,9 +295,9 @@ public class TrackLibraryViewController implements TrackLibraryObserver {
     }
 
     /**
-     * @brief Gestisce il pulsante "Indietro" riconducendo l'utente alla vista di origine.
-     * @details Se la vista era in Selection Mode, riapre i dettagli della playlist. 
-     * Altrimenti, riconduce alla Home principale.
+     * @brief Riconduce l'utente alla schermata di navigazione precedente.
+     * @details Se è in modalità selezione, torna alla playlist passando un solo parametro a init().
+     * @param event L'evento generato dal click sul pulsante "Indietro".
      */
     @FXML
     private void handleGoBack(ActionEvent event) {
@@ -332,7 +306,7 @@ public class TrackLibraryViewController implements TrackLibraryObserver {
         try {
             if (isSelectionMode && targetPlaylist != null) {
                 PlaylistDetailsController controller = App.setRootAndGetController("playlist/PlaylistDetails");
-                controller.init(targetPlaylist, playlistController, TrackLibrary.getInstance(), PlaylistLibrary.getInstance());
+                controller.init(targetPlaylist);
             } else {
                 App.setRoot("home/Home");
             }
@@ -341,12 +315,9 @@ public class TrackLibraryViewController implements TrackLibraryObserver {
         }
     }
 
-    /* Comandi sui dati */
-
     /**
-     * @brief Avvia la procedura di eliminazione permanente di una traccia.
-     * @details Mostra un Dialog di conferma prima di eseguire il comando di rimozione.
-     * @param track La traccia selezionata per l'eliminazione.
+     * @brief Mostra il prompt di conferma ed esegue il pattern Command per rimuovere un brano.
+     * @param track L'oggetto Track da rimuovere definitivamente.
      */
     private void handleDeleteButtonClick(Track track) {
         if (track == null) return;
@@ -365,9 +336,9 @@ public class TrackLibraryViewController implements TrackLibraryObserver {
     }
 
     /**
-     * @brief Mostra un pop-up d'errore applicando il tema scuro personalizzato.
-     * @param title Intestazione dell'errore.
-     * @param message Corpo del messaggio d'errore.
+     * @brief Helper utility per mostrare messaggi di errore a schermo in formato modale.
+     * @param title Intestazione principale del popup.
+     * @param message Descrizione dettagliata dell'errore.
      */
     private void showError(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR, message, ButtonType.OK);
