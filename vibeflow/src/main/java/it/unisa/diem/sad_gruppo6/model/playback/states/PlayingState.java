@@ -17,8 +17,7 @@ public class PlayingState implements PlayerState {
      * @return "Playing" come nome dello stato attuale del player.
     */
     @Override
-    public String getStatusName() 
-    {
+    public String getStatusName() {
         return "Playing";
     }
 
@@ -30,8 +29,7 @@ public class PlayingState implements PlayerState {
     */
    
     @Override
-    public void play(PlaybackState ctx) 
-    {
+    public void play(PlaybackState ctx) {
         return;
     }
 
@@ -43,8 +41,7 @@ public class PlayingState implements PlayerState {
     */
 
     @Override
-    public void pause(PlaybackState ctx) 
-    {
+    public void pause(PlaybackState ctx) {
         ctx.changeState(new PausedState());
     }
 

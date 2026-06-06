@@ -12,12 +12,16 @@ package it.unisa.diem.sad_gruppo6.controller.business.playback;
 
 import it.unisa.diem.sad_gruppo6.model.domain.Playlist;
 import it.unisa.diem.sad_gruppo6.model.domain.Track;
+import it.unisa.diem.sad_gruppo6.model.playback.iterators.PlaylistIterator;
 import it.unisa.diem.sad_gruppo6.model.playback.states.PlaybackState;
 import it.unisa.diem.sad_gruppo6.model.playback.states.PlayingState;
 import it.unisa.diem.sad_gruppo6.model.service.PlaybackService;
 
+import java.util.List;
+
 public class PlaybackController {
 
+    /* Attributi */
     private PlaybackState playbackState;
     private PlaybackService playbackService;
 
@@ -43,23 +47,41 @@ public class PlaybackController {
     /**
      * @brief Avvia l'ascolto di un'intera playlist partendo dalla prima traccia.
      * @param p La playlist da riprodurre.
-     * @throws IllegalArgumentException Se la playlist passata risulta vuota.
      */
     public void play(Playlist p) {
-        if (p.getTracks().isEmpty()) {
-            throw new IllegalArgumentException("La playlist è vuota, impossibile avviare la riproduzione.");
+        if (p == null || p.getTracks().isEmpty()) {
+            throw new IllegalArgumentException("Empty playlist, impossible to play it.");
         }
-        playbackState.setCurrentPlaylist(p);
-        Track first = p.getTracks().get(0); 
-        startPlayback(first);
+        // Delega al metodo sottostante passando il primo brano
+        play(p, p.getTracks().get(0));
     }
 
     /**
-     * @brief Avvia l'ascolto di un singolo brano specifico.
-     * @param t La traccia musicale da riprodurre.
+     * @brief Avvia l'ascolto di una playlist partendo da una traccia specifica.
+     * @param p La playlist da riprodurre come contesto.
+     * @param startTrack La traccia da cui iniziare l'ascolto.
      */
-    public void play(Track t) {
-        startPlayback(t);
+    public void play(Playlist p, Track startTrack) {
+        if (p == null || p.getTracks().isEmpty()) {
+            throw new IllegalArgumentException("Empty playlist, impossible to play.");
+        }
+        playbackState.setCurrentPlaylist(p);
+        play(p.getTracks(), startTrack);
+    }
+
+    /**
+     * @brief Avvia l'ascolto di una lista generica di brani partendo da uno specifico.
+     * @details Configura l'iteratore per permettere lo scorrimento (usato dalla TrackLibrary).
+     * @param tracks La lista dei brani da usare come contesto.
+     * @param startTrack La traccia da cui iniziare la riproduzione.
+     */
+    public void play(List<Track> tracks, Track startTrack) {
+        if (tracks == null || tracks.isEmpty()) {
+            throw new IllegalArgumentException("Empty list, impossible to play it.");
+        }
+        PlaylistIterator iterator = playbackState.getMode().getIterator(tracks, startTrack);
+        playbackState.setIterator(iterator);
+        startPlayback(startTrack);
     }
 
     /**
@@ -70,7 +92,8 @@ public class PlaybackController {
      */
     private void startPlayback(Track t) {
         playbackService.stop();                                  
-        playbackState.setCurrentTrack(t);                
+        playbackState.setCurrentTrack(t);  
+        playbackState.seekTo(0);              
         playbackState.changeState(new PlayingState());   
         playbackService.start();                                 
     }
