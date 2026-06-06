@@ -11,7 +11,6 @@ package it.unisa.diem.sad_gruppo6.controller.ui.library;
 
 
 import it.unisa.diem.sad_gruppo6.controller.business.playback.PlaybackController;
-import it.unisa.diem.sad_gruppo6.controller.business.track.TrackController;
 import it.unisa.diem.sad_gruppo6.controller.business.playlist.PlaylistController;
 import it.unisa.diem.sad_gruppo6.controller.ui.playlist.PlaylistDetailsController;
 import it.unisa.diem.sad_gruppo6.model.command.RemoveTrackFromLibraryCommand;
@@ -23,6 +22,7 @@ import it.unisa.diem.sad_gruppo6.model.library.TrackLibrary;
 import it.unisa.diem.sad_gruppo6.model.library.TrackLibraryObserver;
 
 import it.unisa.diem.sad_gruppo6.App;
+import it.unisa.diem.sad_gruppo6.controller.ui.track.TrackControllerView;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -306,7 +306,7 @@ public class TrackLibraryViewController implements Initializable, TrackLibraryOb
      */
     private void handleEditButtonClick(Track track) {
         try {
-            TrackController controller = App.setRootAndGetController("library/editTrack");
+            TrackControllerView controller = App.setRootAndGetController("library/editTrack");
             controller.setTrackToEdit(track);
         } catch (IOException e) {
             System.err.println("Errore nel caricamento di editTrack.fxml: " + e.getMessage());
