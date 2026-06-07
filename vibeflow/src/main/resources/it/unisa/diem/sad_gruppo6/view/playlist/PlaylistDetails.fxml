@@ -44,7 +44,12 @@
                         <VBox alignment="CENTER" spacing="8.0">
                             <children>
                                 <Button fx:id="playlistPlayPauseButton" mnemonicParsing="false" onAction="#handlePlayPlaylist" styleClass="player-btn, play-playlist-circle-btn" text="▶" />
-                                <Button fx:id="playlistShuffleButton" mnemonicParsing="false" onAction="#handlePlaylistShuffle" styleClass="player-btn, icon-small" text="🔀" />
+                                <HBox alignment="CENTER" spacing="8.0">
+                                    <children>
+                                        <Button fx:id="playlistShuffleButton" mnemonicParsing="false" onAction="#handlePlaylistShuffle" styleClass="player-btn, icon-small" text="🔀" />
+                                        <Button fx:id="playlistLoopButton" mnemonicParsing="false" onAction="#handlePlaylistLoop" styleClass="player-btn, icon-small" text="🔁" />
+                                    </children>
+                                </HBox>
                             </children>
                         </VBox>
                     </children>
