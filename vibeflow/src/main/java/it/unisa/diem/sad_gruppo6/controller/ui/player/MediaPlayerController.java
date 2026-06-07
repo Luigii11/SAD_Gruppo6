@@ -16,6 +16,7 @@ import it.unisa.diem.sad_gruppo6.model.playback.states.PlaybackState;
 import it.unisa.diem.sad_gruppo6.model.playback.strategies.PlaybackMode;
 import it.unisa.diem.sad_gruppo6.model.playback.strategies.SequentialMode;
 import it.unisa.diem.sad_gruppo6.model.playback.strategies.ShuffleMode;
+import it.unisa.diem.sad_gruppo6.model.playback.strategies.LoopMode;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -29,6 +30,7 @@ public class MediaPlayerController implements PlaybackObserver {
     @FXML private Button playPauseButton;
     @FXML private Slider progressBar;
     @FXML private Button shuffleButton;
+    @FXML private Button loopButton;
 
     private PlaybackState playbackState;
     private PlaybackController playbackController;
@@ -82,6 +84,7 @@ public class MediaPlayerController implements PlaybackObserver {
         }
 
         updateShuffleButtonStyle();
+        updateLoopButtonStyle();
     }
 
     @FXML
@@ -142,6 +145,36 @@ public class MediaPlayerController implements PlaybackObserver {
         }
 
         playbackController.setMode(newMode);
+        updateLoopButtonStyle();
+    }
+
+    /**
+     * @brief Gestisce il click sul pulsante Loop, alternando tra modalità ciclica
+     *        e sequenziale.
+     *
+     * @details Se la modalità corrente è già LoopMode, la disattiva
+     *          ripristinando un SequentialMode posizionato sulla traccia
+     *          corrente. Altrimenti attiva il Loop. In entrambi
+     *          i casi l'aggiornamento visivo del pulsante avviene tramite updateLoopButtonStyle(), chiamato da refreshUI()
+     *          in risposta alla notifica Observer.
+     *
+     * @param event L'evento JavaFX generato dal click sul pulsante.
+     */
+    @FXML
+    private void handleLoop(ActionEvent event) {
+        PlaybackMode currentMode = playbackState.getMode();
+        PlaybackMode newMode;
+
+        if (currentMode instanceof LoopMode) {
+            // Loop attivo --> disattiva, torna alla modalità sequenziale
+            newMode = new SequentialMode();
+        } else {
+            // Loop non attivo --> attiva la modalità ciclica
+            newMode = new LoopMode();
+        }
+
+        playbackController.setMode(newMode);
+        updateShuffleButtonStyle();
     }
 
     /**
@@ -165,4 +198,26 @@ public class MediaPlayerController implements PlaybackObserver {
             shuffleButton.getStyleClass().remove("active");
         }
     }
+
+    /**
+     * @brief Aggiorna lo stile grafico del pulsante Loop in base alla modalità attiva.
+     *
+     * @details Se la modalità corrente è LoopMode, aggiunge la CSS class
+     *         "active" al pulsante per evidenziarlo visivamente.
+     *          La rimozione della classe ripristina l'aspetto normale.
+     */
+    private void updateLoopButtonStyle() {
+        if (loopButton == null) return;
+
+        boolean isLoopActive = playbackState.getMode() instanceof LoopMode;
+
+        if (isLoopActive) {
+            if (!loopButton.getStyleClass().contains("active")) {
+                loopButton.getStyleClass().add("active");
+            }
+        } else {
+            loopButton.getStyleClass().remove("active");
+        }
+    }
+
 }

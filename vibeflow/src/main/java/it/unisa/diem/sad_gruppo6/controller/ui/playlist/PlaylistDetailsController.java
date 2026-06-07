@@ -31,6 +31,7 @@ import it.unisa.diem.sad_gruppo6.model.playback.states.PlaybackState;
 import it.unisa.diem.sad_gruppo6.model.playback.strategies.PlaybackMode;
 import it.unisa.diem.sad_gruppo6.model.playback.strategies.SequentialMode;
 import it.unisa.diem.sad_gruppo6.model.playback.strategies.ShuffleMode;
+import it.unisa.diem.sad_gruppo6.model.playback.strategies.LoopMode;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
@@ -74,9 +75,8 @@ public class PlaylistDetailsController implements PlaylistLibraryObserver, Playb
     @FXML private Button undoCancelButton;
 
   
-
-
     @FXML private Button playlistShuffleButton;
+    @FXML private Button playlistLoopButton;
 
 
     /* Attributi */
@@ -211,6 +211,7 @@ public class PlaylistDetailsController implements PlaylistLibraryObserver, Playb
     public void update(PlaybackState state) { 
         updateHeaderPlayButton(); 
         updatePlaylistShuffleButton();
+        updatePlaylistLoopButton();
         trackTable.refresh();
     }
 
@@ -292,6 +293,30 @@ public class PlaylistDetailsController implements PlaylistLibraryObserver, Playb
             } else {
                 // Shuffle non attivo → attiva (AC1, AC2, AC3)
                 playbackController.setMode(new ShuffleMode());
+                updatePlaylistLoopButton();
+            }
+        }
+
+        /**
+         * @brief Gestisce il click sul pulsante Loop nell'header della playlist.
+         *
+         * @details Commuta la modalità tra LoopMode e SequentialMode
+         *          senza interrompere la traccia corrente. Loop e shuffle sono
+         *          mutuamente esclusivi: attivare uno disattiva l'altro visivamente.
+         *
+         * @param event L'evento JavaFX generato dal click.
+         */
+        @FXML
+        private void handlePlaylistLoop(ActionEvent event) {
+            PlaybackMode currentMode = playbackState.getMode();
+
+            if (currentMode instanceof LoopMode) {
+                // Loop attivo --> disattiva, ripristina sequenziale
+                playbackController.setMode(new SequentialMode());
+            } else {
+                // Loop non attivo --> attiva
+                playbackController.setMode(new LoopMode());
+                updatePlaylistShuffleButton();
             }
         }
 
@@ -312,6 +337,24 @@ public class PlaylistDetailsController implements PlaylistLibraryObserver, Playb
                 }
             } else {
                 playlistShuffleButton.getStyleClass().remove("active");
+            }
+        }
+
+        /**
+         * @brief Aggiorna lo stile grafico del pulsante Loop nella vista playlist.
+         *
+         * @details Aggiunge la CSS class "active" quando la modalità corrente
+         *          è LoopMode, la rimuove altrimenti.
+         */
+        private void updatePlaylistLoopButton() {
+            if (playlistLoopButton == null) return;
+            boolean isLoopActive = playbackState.getMode() instanceof LoopMode;
+            if (isLoopActive) {
+                if (!playlistLoopButton.getStyleClass().contains("active")) {
+                    playlistLoopButton.getStyleClass().add("active");
+                }
+            } else {
+                playlistLoopButton.getStyleClass().remove("active");
             }
         }
 

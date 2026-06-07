@@ -28,7 +28,7 @@
                         <Button mnemonicParsing="false" onAction="#handlePrevious" styleClass="player-btn, icon-medium" text="⏮" />
                         <Button fx:id="playPauseButton" mnemonicParsing="false" onAction="#handlePlayPause" styleClass="play-pause-btn" text="⏵" />
                         <Button mnemonicParsing="false" onAction="#handleNext" styleClass="player-btn, icon-medium" text="⏭" />
-                        <Button mnemonicParsing="false" styleClass="player-btn, icon-small" text="🔁" />
+                        <Button fx:id="loopButton" mnemonicParsing="false" onAction="#handleLoop" styleClass="player-btn, icon-small" text="🔁" />
                     </children>
                 </HBox>
                 <Region HBox.hgrow="ALWAYS" />
