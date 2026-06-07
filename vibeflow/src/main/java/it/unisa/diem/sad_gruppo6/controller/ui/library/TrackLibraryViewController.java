@@ -39,6 +39,7 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 
 public class TrackLibraryViewController implements TrackLibraryObserver {
@@ -87,7 +88,12 @@ public class TrackLibraryViewController implements TrackLibraryObserver {
                 Track selectedTrack = trackTable.getSelectionModel().getSelectedItem();
                 if (selectedTrack != null) {
                     // Avvia la riproduzione passando l'intera lista e il brano di partenza
-                    playbackController.play(library.getTracks(), selectedTrack);
+                    try {
+                        playbackController.play(library.getTracks(), selectedTrack);
+                    } catch (FileNotFoundException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
                 }
             }
         });
