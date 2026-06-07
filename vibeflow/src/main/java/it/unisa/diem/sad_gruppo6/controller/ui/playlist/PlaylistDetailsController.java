@@ -27,6 +27,9 @@ import it.unisa.diem.sad_gruppo6.model.library.PlaylistLibraryObserver;
 import it.unisa.diem.sad_gruppo6.model.library.TrackLibrary;
 import it.unisa.diem.sad_gruppo6.model.playback.states.PlaybackObserver;
 import it.unisa.diem.sad_gruppo6.model.playback.states.PlaybackState;
+import it.unisa.diem.sad_gruppo6.model.playback.strategies.PlaybackMode;
+import it.unisa.diem.sad_gruppo6.model.playback.strategies.SequentialMode;
+import it.unisa.diem.sad_gruppo6.model.playback.strategies.ShuffleMode;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
@@ -56,6 +59,7 @@ public class PlaylistDetailsController implements PlaylistLibraryObserver, Playb
     @FXML private TableColumn<Track, String> durationCol;
     @FXML private TableColumn<Track, Void> actionCol;
     @FXML private MediaPlayerController mediaPlayerController;
+    @FXML private Button playlistShuffleButton;
 
     /* Attributi */
     private Playlist currentPlaylist;
@@ -110,7 +114,22 @@ public class PlaylistDetailsController implements PlaylistLibraryObserver, Playb
      * un pulsante di eliminazione per la colonna delle azioni.
      */
     private void setupTableView() {
-        titleCol.setCellValueFactory(data -> new SimpleStringProperty("♫   " + data.getValue().getTitle()));
+        titleCol.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getTitle()));
+        titleCol.setCellFactory(col -> new TableCell<>() {
+            @Override
+            protected void updateItem(String title, boolean empty) {
+                super.updateItem(title, empty);
+                if (empty || title == null) {
+                    setText(null);
+                } else {
+                    Track rowTrack = getTableView().getItems().get(getIndex());
+                    Track current = playbackState.getCurrentTrack();
+                    // Mostra ▶ se è il brano corrente (funziona anche con ShuffleIterator), ♫ altrimenti
+                    String icon = rowTrack.equals(current) ? "▶   " : "♫   ";
+                    setText(icon + title);
+                }
+            }
+        });
         authorCol.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getAuthor()));
         
         metaCol.setCellValueFactory(data -> {
@@ -158,6 +177,8 @@ public class PlaylistDetailsController implements PlaylistLibraryObserver, Playb
     @Override
     public void update(PlaybackState state) { 
         updateHeaderPlayButton(); 
+        updatePlaylistShuffleButton();
+        trackTable.refresh();
     }
 
     /**
@@ -216,6 +237,51 @@ public class PlaylistDetailsController implements PlaylistLibraryObserver, Playb
         }
         }
     }
+
+        /**
+         * @brief Gestisce il click sul pulsante Shuffle nell'header della playlist.
+         *
+         * @details Commuta la modalità tra {@link ShuffleMode} e {@link SequentialMode}
+         *          senza interrompere la traccia corrente; lo shuffle ha effetto dal
+         *          brano successivo (AC3). Se non è in corso alcuna riproduzione il
+         *          pulsante non produce effetti sulla riproduzione stessa: si limita
+         *          a impostare la modalità che verrà usata al prossimo avvio (AC1).
+         *
+         * @param event L'evento JavaFX generato dal click.
+         */
+        @FXML
+        private void handlePlaylistShuffle(ActionEvent event) {
+            PlaybackMode currentMode = playbackState.getMode();
+
+            if (currentMode instanceof ShuffleMode) {
+                // Shuffle attivo → disattiva, ripristina sequenziale (AC4, AC5)
+                playbackController.setMode(new SequentialMode());
+            } else {
+                // Shuffle non attivo → attiva (AC1, AC2, AC3)
+                playbackController.setMode(new ShuffleMode());
+            }
+        }
+
+        /**
+         * @brief Aggiorna lo stile grafico del pulsante Shuffle nella vista playlist.
+         *
+         * @details Aggiunge la CSS class {@code "active"} quando la modalità corrente
+         *          è {@link ShuffleMode} (AC2), la rimuove altrimenti (AC5).
+         *
+         * @author ChiaraCrisci
+         */
+        private void updatePlaylistShuffleButton() {
+            if (playlistShuffleButton == null) return;
+            boolean isShuffleActive = playbackState.getMode() instanceof ShuffleMode;
+            if (isShuffleActive) {
+                if (!playlistShuffleButton.getStyleClass().contains("active")) {
+                    playlistShuffleButton.getStyleClass().add("active");
+                }
+            } else {
+                playlistShuffleButton.getStyleClass().remove("active");
+            }
+        }
+
 
     /**
      * @brief Apre la schermata della libreria globale per consentire l'aggiunta di un nuovo brano.

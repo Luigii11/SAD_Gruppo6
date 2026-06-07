@@ -35,7 +35,7 @@ public class PlaybackState {
     private int currentPosition;
     private PlaylistIterator iterator;
     private PlaybackMode mode;
-
+    private List<Track> currentTrackList;
     /**
      * @brief Costruttore privato per il pattern Singleton.
      * * Inizializza la lista degli osservatori, imposta lo stato iniziale a 
@@ -194,6 +194,25 @@ public class PlaybackState {
      */
     public PlaybackMode getMode() {
         return this.mode;
+    }
+
+    /**
+     * @brief Imposta la lista di tracce su cui è attivo l'iteratore corrente.
+     * @details Viene aggiornata ad ogni avvio di riproduzione (sia da Playlist
+     *          che da TrackLibrary), così {@code setMode()} può sempre ricostruire
+     *          l'iteratore correttamente indipendentemente dal contesto.
+     * @param tracks La lista di tracce corrente.
+     */
+    public void setCurrentTrackList(List<Track> tracks) {
+        this.currentTrackList = tracks;
+    }
+
+    /**
+     * @brief Restituisce la lista di tracce attualmente in uso dall'iteratore.
+     * @return La lista corrente, o {@code null} se non ancora impostata.
+     */
+    public List<Track> getCurrentTrackList() {
+        return this.currentTrackList;
     }
 
     /**
