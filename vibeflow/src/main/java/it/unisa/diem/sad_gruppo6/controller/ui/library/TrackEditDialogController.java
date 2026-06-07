@@ -8,6 +8,10 @@
 
 package it.unisa.diem.sad_gruppo6.controller.ui.library;
 
+
+import java.io.File;
+import it.unisa.diem.sad_gruppo6.controller.business.track.TrackController;
+
 import it.unisa.diem.sad_gruppo6.controller.ui.utils.DialogUtils;
 import it.unisa.diem.sad_gruppo6.model.domain.Track;
 import javafx.event.ActionEvent;
@@ -18,6 +22,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 public class TrackEditDialogController {
@@ -31,8 +36,10 @@ public class TrackEditDialogController {
     @FXML private TextField yearField;
     @FXML private Button cancelButton;
     @FXML private Button saveButton;
+    @FXML private TextField pathField; 
 
     /* Attributi */
+    private final TrackController trackController = new TrackController();
     private Track trackToEdit;
 
     // TODO: @EmanuelChirico - Inietta qui il TrackController di business per gestire l'aggiornamento
@@ -51,8 +58,26 @@ public class TrackEditDialogController {
         durationField.setText(String.valueOf(track.getDuration()));
         genreField.setText(track.getGenre() != null ? track.getGenre() : "");
         yearField.setText(track.getYear() > 0 ? String.valueOf(track.getYear()) : "");
+        pathField.setText(track.getPath() != null ? track.getPath() : "");
     }
 
+
+    /**
+     * @brief Apre un FileChooser per cambiare il file audio (opzionale).
+     */
+    @FXML
+    private void handleBrowseFile(ActionEvent event) {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Seleziona file audio");
+        fileChooser.getExtensionFilters().add(
+            new FileChooser.ExtensionFilter("File MP3", "*.mp3")
+        );
+        File file = fileChooser.showOpenDialog(pathField.getScene().getWindow());
+        if (file != null) {
+            pathField.setText(file.getAbsolutePath());
+        }
+    }
+   
     @FXML
     private void handleSave(ActionEvent event) {
         String title = titleField.getText().trim();
@@ -60,9 +85,10 @@ public class TrackEditDialogController {
         String durationStr = durationField.getText().trim();
         String genre = genreField.getText().trim();
         String yearStr = yearField.getText().trim();
+        String path = pathField.getText().trim();
 
         // 1. Validazione UI: Controllo campi vuoti
-        if (title.isEmpty() || author.isEmpty() || durationStr.isEmpty() || genre.isEmpty() || yearStr.isEmpty()) {
+        if (title.isEmpty() || author.isEmpty() || durationStr.isEmpty() || genre.isEmpty() || yearStr.isEmpty() || path.isEmpty()) {
             showError("Missing Information", "All fields are required. Please fill in every detail.");
             return;
         }
@@ -90,10 +116,7 @@ public class TrackEditDialogController {
             
             System.out.println("DEBUG UI: Modifica Validata -> Vecchio Titolo: " + trackToEdit.getTitle() + " | Nuovo: " + title);
             
-            Track updatedTrack = new Track(title, author, duration, genre, year, null);
-            it.unisa.diem.sad_gruppo6.model.command.CommandManager.getInstance().execute(
-                new it.unisa.diem.sad_gruppo6.model.command.EditTrackCommand(trackToEdit, updatedTrack)
-            );
+            trackController.editTrack(trackToEdit, title, author, genre, year, path);
             close();
 
         } catch (NumberFormatException e) {

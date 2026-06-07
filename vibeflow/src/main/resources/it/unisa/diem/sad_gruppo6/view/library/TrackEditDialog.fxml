@@ -38,6 +38,11 @@
         <Label style="-fx-text-fill: #AAAAAA; -fx-font-size: 14px; -fx-font-weight: bold;" text="Year" GridPane.columnIndex="0" GridPane.rowIndex="4" />
         <TextField fx:id="yearField" styleClass="text-field" GridPane.columnIndex="1" GridPane.rowIndex="4" />
         
+        <Label style="-fx-text-fill: #AAAAAA; -fx-font-size: 14px; -fx-font-weight: bold;" text="File" GridPane.columnIndex="0" GridPane.rowIndex="5" />
+        <HBox spacing="8.0" GridPane.columnIndex="1" GridPane.rowIndex="5">
+            <TextField fx:id="pathField" prefWidth="190.0" styleClass="text-field" editable="false" />
+            <Button mnemonicParsing="false" onAction="#handleBrowseFile" styleClass="button" text="…" prefWidth="50.0" />
+        </HBox>
     </GridPane>
 
     <HBox alignment="CENTER_RIGHT" spacing="15.0">
