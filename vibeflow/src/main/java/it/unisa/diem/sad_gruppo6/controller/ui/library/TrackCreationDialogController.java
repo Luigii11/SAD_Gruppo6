@@ -81,7 +81,6 @@ public class TrackCreationDialogController {
             pathField.setText(file.getAbsolutePath());
         }
     }
-
     /**
      * @brief Gestisce il salvataggio: validazione UI, poi delega al business controller.
      * @details In modalità create chiama trackController.createTrack();
