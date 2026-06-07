@@ -22,6 +22,7 @@ import it.unisa.diem.sad_gruppo6.model.domain.Track;
 import it.unisa.diem.sad_gruppo6.model.library.PlaylistLibrary;
 import it.unisa.diem.sad_gruppo6.model.library.TrackLibrary;
 import it.unisa.diem.sad_gruppo6.model.library.TrackLibraryObserver;
+import it.unisa.diem.sad_gruppo6.model.playback.states.PlaybackState;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -77,6 +78,7 @@ public class TrackLibraryViewController implements TrackLibraryObserver {
     private boolean isSelectionMode = false;
     private Playlist targetPlaylist;
     private Timeline undoTimeline;
+    private PlaybackState playbackState;
 
     /**
      * @brief Metodo di inizializzazione standard invocato dal framework JavaFX.
@@ -88,7 +90,9 @@ public class TrackLibraryViewController implements TrackLibraryObserver {
     public void initialize() {
         this.library = TrackLibrary.getInstance();
         this.playbackController = new PlaybackController();
-        
+        this.playbackState = PlaybackState.getInstance();
+        this.playbackState.registerObserver(state -> refreshTrackIcons());
+
         this.library.registerObserver(this);
         
         setupTableView();
@@ -135,19 +139,47 @@ public class TrackLibraryViewController implements TrackLibraryObserver {
      * @brief Imposta le logiche di estrazione dati per le colonne della tabella.
      */
     private void setupTableView() {
-        titleCol.setCellValueFactory(data -> new SimpleStringProperty("♫   " + data.getValue().getTitle()));
-        authorCol.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getAuthor()));
-        
-        metaCol.setCellValueFactory(data -> {
-            String genre = data.getValue().getGenre() != null ? data.getValue().getGenre() : "Unknown";
-            String year = data.getValue().getYear() > 0 ? String.valueOf(data.getValue().getYear()) : "----";
-            return new SimpleStringProperty(genre + "  •  " + year);
-        });
+    titleCol.setCellValueFactory(data -> 
+        new SimpleStringProperty(data.getValue().getTitle()));
+    titleCol.setCellFactory(col -> new TableCell<>() {
+        @Override
+        protected void updateItem(String title, boolean empty) {
+            super.updateItem(title, empty);
+            if (empty || title == null) {
+                setText(null);
+            } else {
+                Track rowTrack = getTableView().getItems().get(getIndex());
+                Track current = playbackState.getCurrentTrack();
+                String icon = rowTrack.equals(current) ? "▶   " : "♫   ";
+                setText(icon + title);
+            }
+        }
+    });
 
-        durationCol.setCellValueFactory(data -> {
-            int totalSeconds = data.getValue().getDuration();
-            return new SimpleStringProperty(String.format("%d:%02d", totalSeconds / 60, totalSeconds % 60));
-        });
+    authorCol.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getAuthor()));
+    
+    metaCol.setCellValueFactory(data -> {
+        String genre = data.getValue().getGenre() != null ? data.getValue().getGenre() : "Unknown";
+        String year = data.getValue().getYear() > 0 ? String.valueOf(data.getValue().getYear()) : "----";
+        return new SimpleStringProperty(genre + "  •  " + year);
+    });
+
+    durationCol.setCellValueFactory(data -> {
+        int totalSeconds = data.getValue().getDuration();
+        return new SimpleStringProperty(String.format("%d:%02d", totalSeconds / 60, totalSeconds % 60));
+    });
+}
+ 
+
+    /**
+     * @brief Forza il ridisegno delle righe per aggiornare l'icona ▶ sulla traccia corrente.
+     * @details Chiamato ad ogni notifica Observer del PlaybackState, funziona sia
+     *          in modalità sequenziale che shuffle (AC3 ID_15).
+     */
+    private void refreshTrackIcons() {
+        if (trackTable != null) {
+            trackTable.refresh();
+        }
     }
 
     /**
@@ -272,6 +304,7 @@ public class TrackLibraryViewController implements TrackLibraryObserver {
         undoTimeline.stop();
         }
         this.library.removeObserver(this);
+        this.playbackState.removeObserver(state -> refreshTrackIcons());
         if (mediaPlayerController != null) {
             mediaPlayerController.cleanup();
         }

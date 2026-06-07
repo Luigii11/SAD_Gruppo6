@@ -59,28 +59,35 @@ public class PlaybackService {
     }
 
     /**
-     * Avvia la riproduzione audio della traccia corrente memorizzata in
-     * PlaybackState. Ferma e libera eventuali player attivi prima di
-     * crearne uno nuovo, garantendo che la riproduzione riparta sempre dall'inizio.
-     * Non avvia alcuna riproduzione se non è presente una traccia corrente.
+     * @brief Avvia la riproduzione audio della traccia corrente memorizzata in PlaybackState.
+     * @details Ferma e libera eventuali player attivi prima di crearne uno nuovo.
+     *          Registra un listener su {@code currentTimeProperty} che invoca {@link #tick()}
+     *          ogni secondo per aggiornare la posizione e notificare gli observer.
+     *          Registra inoltre il callback di fine traccia per l'auto-scorrimento.
+     * @throws FileNotFoundException Se il file audio non esiste nel path originale.
      */
-
-    public void start()  throws FileNotFoundException {
+    public void start() throws FileNotFoundException {
         stop();
         currentTrack = playbackState.getCurrentTrack();
         if (currentTrack == null) {
-            return; 
+            return;
         }
-        String currentTrackPath = currentTrack.getPath();   
+        String currentTrackPath = currentTrack.getPath();
         File filepath = new File(currentTrackPath);
-        if (!filepath.exists()){
+        if (!filepath.exists()) {
             throw new FileNotFoundException("La traccia audio selezionata non esiste più nel path originale.");
-        }     
+        }
         String play = filepath.toURI().toString();
         Media playbleSong = new Media(play);
         player = new MediaPlayer(playbleSong);
-        player.play();
 
+        player.currentTimeProperty().addListener((obs, oldTime, newTime) -> {
+            int seconds = (int) newTime.toSeconds();
+            if (seconds != playbackState.getCurrentPosition()) {
+                tick();
+            }
+        });
+        player.play();
     }
 
     /**
@@ -130,47 +137,16 @@ public class PlaybackService {
     }
 
     /**
-     * Chiamato ogni secondo dalla Timeline: aggiorna la posizione corrente di
-     * riproduzione nel PlaybackState e ferma il servizio al termine della traccia.
-     *
-     * <p>Recupera la traccia corrente e la durata totale dal PlaybackState.
-     * Se la posizione attuale è inferiore alla durata totale, incrementa di 1
-     * secondo tramite {@link PlaybackState#seekTo(int)} (che notifica automaticamente
-     * gli osservatori, aggiornando la UI). Quando la posizione raggiunge o supera
-     * la durata totale, la Timeline viene fermata tramite {@link #stop()}.</p>
-     *
-     * @see PlaybackState#seekTo(int)
-     * @see PlaybackState#getCurrentPosition()
+     * @brief Aggiorna la posizione di riproduzione e notifica gli observer.
+     * @details Chiamato ogni secondo dal listener su {@code currentTimeProperty}
+     *          del {@link MediaPlayer} durante la riproduzione attiva. Invoca
+     *          {@link PlaybackState#incrementPosition()} che incrementa
+     *          {@code currentPosition} e notifica automaticamente tutti gli
+     *          observer, aggiornando barra di avanzamento e contatore.
+     *          Non viene invocato quando il player è in pausa, garantendo che
+     *          il contatore si arresti nella posizione esatta.
      */
     private void tick() {
-        Track currentTrack = playbackState.getCurrentTrack();
-        if (currentTrack == null) {
-            stop();
-            return;
-        }
-
-        int currentPos = playbackState.getCurrentPosition();
-        int totalDuration = currentTrack.getDuration();
-
-        if (currentPos < totalDuration) {
-            // La traccia è ancora in corso: avanza di 1 secondo
-            playbackState.seekTo(currentPos + 1);
-        } else {
-            // La traccia corrente è terminata. Controlliamo se c'è un brano successivo.
-            PlaylistIterator iterator = playbackState.getIterator();
-            
-            if (iterator != null && iterator.hasNext()) {
-                // C'è un'altra traccia. Auto-scorrimento in avanti.
-                Track nextTrack = iterator.next();
-                playbackState.setCurrentTrack(nextTrack);
-                playbackState.seekTo(0);
-                // Non serve chiamare start(), la timeline è "INDEFINITE" e continuerà a ticchettare
-            } else {
-                // La playlist è finita. Nessun brano successivo.
-                stop();
-                playbackState.pause();
-                playbackState.seekTo(0);
-            }
-        }
+        playbackState.incrementPosition();
     }
 }

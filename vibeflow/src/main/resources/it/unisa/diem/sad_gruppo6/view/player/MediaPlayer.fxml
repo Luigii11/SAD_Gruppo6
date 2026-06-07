@@ -32,7 +32,11 @@
                     </children>
                 </HBox>
                 <Region HBox.hgrow="ALWAYS" />
-                <VBox prefWidth="250.0" />
+                <VBox alignment="CENTER_RIGHT" prefWidth="250.0">
+                        <children>
+                            <Label fx:id="timeLabel" styleClass="cell-author-label" text="0:00 / 0:00" />
+                        </children>
+                </VBox>
             </children>
         </HBox>
         <Slider fx:id="progressBar" styleClass="player-slider" value="0.0" />

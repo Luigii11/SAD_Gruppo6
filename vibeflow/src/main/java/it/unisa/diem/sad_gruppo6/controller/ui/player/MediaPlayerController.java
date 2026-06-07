@@ -29,6 +29,7 @@ public class MediaPlayerController implements PlaybackObserver {
     @FXML private Button playPauseButton;
     @FXML private Slider progressBar;
     @FXML private Button shuffleButton;
+    @FXML private Label timeLabel;
 
     private PlaybackState playbackState;
     private PlaybackController playbackController;
@@ -51,6 +52,8 @@ public class MediaPlayerController implements PlaybackObserver {
 
     /**
      * @brief Aggiorna l'interfaccia in base al brano e allo stato corrente.
+     * @details Aggiorna titolo, autore, barra di avanzamento, contatore del tempo (AC1, AC2)
+     *          e lo stile del pulsante shuffle. Viene chiamato ad ogni notifica Observer.
      */
     private void refreshUI() {
         Track actualTrack = playbackState.getCurrentTrack();
@@ -69,10 +72,19 @@ public class MediaPlayerController implements PlaybackObserver {
             } else {
                 progressBar.setValue(0);
             }
+            
+            if (timeLabel != null) {
+                timeLabel.setText(String.format("%d:%02d / %d:%02d",
+                    currentPos / 60, currentPos % 60,
+                    totalDuration / 60, totalDuration % 60));
+            }
         } else {
             trackTitleLabel.setText("No track playing");
             trackAuthorLabel.setText("-");
             progressBar.setValue(0);
+            if (timeLabel != null) {
+                timeLabel.setText("0:00 / 0:00");
+            }
         }
 
         if ("Playing".equals(status)) {
