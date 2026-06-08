@@ -15,7 +15,6 @@ import it.unisa.diem.sad_gruppo6.controller.ui.playlist.PlaylistDetailsControlle
 import it.unisa.diem.sad_gruppo6.controller.ui.utils.DialogUtils;
 import it.unisa.diem.sad_gruppo6.model.command.CommandManager;
 import it.unisa.diem.sad_gruppo6.model.command.AddTrackToPlaylistCommand;
-import it.unisa.diem.sad_gruppo6.model.command.AddTrackToLibraryCommand;
 import it.unisa.diem.sad_gruppo6.model.command.RemoveTrackFromLibraryCommand;
 import it.unisa.diem.sad_gruppo6.model.domain.Playlist;
 import it.unisa.diem.sad_gruppo6.model.domain.Track;
@@ -43,7 +42,6 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
-import javafx.application.Platform;
 import javafx.util.Duration;
 
 import java.io.FileNotFoundException;
@@ -107,7 +105,6 @@ public class TrackLibraryViewController implements TrackLibraryObserver {
                     try {
                         playbackController.play(library.getTracks(), selectedTrack);
                     } catch (FileNotFoundException e) {
-                        // TODO Auto-generated catch block
                         e.printStackTrace();
                     }
                 }
@@ -292,6 +289,14 @@ public class TrackLibraryViewController implements TrackLibraryObserver {
     public void onLibraryChanged() {
         if (trackTable != null) {
             trackTable.getItems().setAll(library.getTracks());
+        }
+
+        PlaybackState state = PlaybackState.getInstance();
+        state.setCurrentTrackList(library.getTracks());
+        
+        var iterator = state.getIterator();
+        if (iterator != null) {
+            iterator.updateTracks(library.getTracks());
         }
     }
 

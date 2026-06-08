@@ -99,4 +99,8 @@ public class SequentialIterator implements PlaylistIterator {
     public void reset() {
         this.currentIndex = 0;
     }
+
+    public void updateTracks(List<Track> newTracks) {
+        this.tracks = newTracks;
+    }
 }

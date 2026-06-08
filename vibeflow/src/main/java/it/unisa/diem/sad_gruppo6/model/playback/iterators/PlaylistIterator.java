@@ -10,6 +10,8 @@
 
 package it.unisa.diem.sad_gruppo6.model.playback.iterators;
 
+import java.util.List;
+
 import it.unisa.diem.sad_gruppo6.model.domain.Track;
 
 public interface PlaylistIterator {
@@ -42,4 +44,10 @@ public interface PlaylistIterator {
      * Resetta l'iteratore allo stato iniziale.
      */
     void reset();
+
+    /**
+     * Aggiorna la lista di tracce quando viene modificata.
+     * @param newTracks
+     */
+    void updateTracks(List<Track> newTracks);
 }

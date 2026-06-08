@@ -223,6 +223,12 @@ public class PlaylistDetailsController implements PlaylistLibraryObserver, Playb
             playlistNameLabel.setText(currentPlaylist.getName());
             trackCountLabel.setText("Total tracks: " + currentPlaylist.getTracks().size());
             trackTable.getItems().setAll(currentPlaylist.getTracks());
+            PlaybackState.getInstance().setCurrentTrackList(currentPlaylist.getTracks());
+        }
+
+        var iterator = PlaybackState.getInstance().getIterator();
+        if (iterator != null) {
+            iterator.updateTracks(currentPlaylist.getTracks());
         }
     }
 

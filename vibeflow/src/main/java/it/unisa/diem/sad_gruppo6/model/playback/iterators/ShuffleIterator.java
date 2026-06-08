@@ -175,4 +175,21 @@ public class ShuffleIterator implements PlaylistIterator {
         history.clear();
         historyIndex = -1;
     }
+
+    public void updateTracks(List<Track> newTracks) {
+        List<Track> allCurrentTracks = new ArrayList<>(history);
+        allCurrentTracks.addAll(remaining);
+
+        history.removeIf(t -> !newTracks.contains(t));
+        remaining.removeIf(t -> !newTracks.contains(t));
+
+        for (Track t : newTracks) {
+            if (!history.contains(t) && !remaining.contains(t)) {
+                remaining.add(t);
+            }
+        }
+        if (historyIndex >= history.size()) {
+            historyIndex = history.size() - 1;
+        }
+    }
 }
