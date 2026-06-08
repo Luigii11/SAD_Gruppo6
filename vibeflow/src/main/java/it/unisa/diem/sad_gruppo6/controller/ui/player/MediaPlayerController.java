@@ -113,7 +113,6 @@ public class MediaPlayerController implements PlaybackObserver {
         try {
             playbackController.next();
         } catch (FileNotFoundException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
     }
@@ -203,11 +202,11 @@ public class MediaPlayerController implements PlaybackObserver {
         boolean isShuffleActive = playbackState.getMode() instanceof ShuffleMode;
 
         if (isShuffleActive) {
-            if (!shuffleButton.getStyleClass().contains("active")) {
-                shuffleButton.getStyleClass().add("active");
+            if (!shuffleButton.getStyleClass().contains("active-mode-btn")) {
+                shuffleButton.getStyleClass().add("active-mode-btn");
             }
         } else {
-            shuffleButton.getStyleClass().remove("active");
+            shuffleButton.getStyleClass().remove("active-mode-btn");
         }
     }
 
@@ -224,11 +223,11 @@ public class MediaPlayerController implements PlaybackObserver {
         boolean isLoopActive = playbackState.getMode() instanceof LoopMode;
 
         if (isLoopActive) {
-            if (!loopButton.getStyleClass().contains("active")) {
-                loopButton.getStyleClass().add("active");
+            if (!loopButton.getStyleClass().contains("active-mode-btn")) {
+                loopButton.getStyleClass().add("active-mode-btn");
             }
         } else {
-            loopButton.getStyleClass().remove("active");
+            loopButton.getStyleClass().remove("active-mode-btn");
         }
     }
 

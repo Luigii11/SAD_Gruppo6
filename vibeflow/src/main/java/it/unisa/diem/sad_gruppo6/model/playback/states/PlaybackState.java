@@ -215,6 +215,7 @@ public class PlaybackState {
      */
     public void setMode(PlaybackMode mode) {
         this.mode = mode;
+        notifyObservers();
     }
 
     /**

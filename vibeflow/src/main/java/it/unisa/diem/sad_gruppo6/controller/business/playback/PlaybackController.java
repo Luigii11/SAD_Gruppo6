@@ -147,13 +147,31 @@ public class PlaybackController {
      * @throws FileNotFoundException Se il file audio della traccia successiva non esiste.
      */
     public void next() throws FileNotFoundException {
+        if (playbackState == null) return;
+
         Track previousTrack = playbackState.getCurrentTrack();
         playbackState.next();
         Track currentTrack = playbackState.getCurrentTrack();
 
-        if (currentTrack != null && currentTrack != previousTrack) {
-            playbackService.start();
-            playbackService.setOnEndOfTrack(() -> onTrackEnded());
+        if (currentTrack != null) {
+            if (currentTrack != previousTrack) {
+                // C'è un brano successivo
+                playbackService.start();
+                playbackService.setOnEndOfTrack(() -> onTrackEnded());
+            } else {
+                // La traccia è la stessa
+                boolean isLoop = playbackState.getMode() instanceof it.unisa.diem.sad_gruppo6.model.playback.strategies.LoopMode;
+                if (isLoop) {
+                    // Loop con 1 solo brano: Riavvia da zero
+                    if (playbackService != null) playbackService.stop();
+                    playbackService.start();
+                    playbackService.setOnEndOfTrack(() -> onTrackEnded());
+                }
+            }
+        }
+
+        if ("Paused".equals(playbackState.getStatusName())) {
+            this.resume();
         }
     }
 
@@ -166,16 +184,29 @@ public class PlaybackController {
      */
     public void previous() throws FileNotFoundException {
         if (playbackState == null) return;
-
+        
         Track previousTrack = playbackState.getCurrentTrack();
         playbackState.previous();
         Track currentTrack = playbackState.getCurrentTrack();
 
-        // Riavvia sempre il MediaPlayer: sia che sia cambiata traccia,
-        // sia che si sia solo tornati all'inizio della stessa (seekTo(0))
         if (currentTrack != null) {
-            playbackService.start();
-            playbackService.setOnEndOfTrack(() -> onTrackEnded());
+            if (currentTrack != previousTrack) {
+                // C'è un brano precedente
+                playbackService.start();
+                playbackService.setOnEndOfTrack(() -> onTrackEnded());
+            } else {
+                // La traccia è la stessa
+                boolean isLoop = playbackState.getMode() instanceof it.unisa.diem.sad_gruppo6.model.playback.strategies.LoopMode;
+                if (isLoop || playbackState.getCurrentPosition() == 0) {
+                    if (playbackService != null) playbackService.stop();
+                    playbackService.start();
+                    playbackService.setOnEndOfTrack(() -> onTrackEnded());
+                }
+            }
+        }
+
+        if ("Paused".equals(playbackState.getStatusName())) {
+            this.resume();
         }
     }
 

@@ -17,13 +17,10 @@
  */
 package it.unisa.diem.sad_gruppo6.model.service;
 
-import javafx.animation.Timeline;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 
 import it.unisa.diem.sad_gruppo6.model.domain.Track;
-import it.unisa.diem.sad_gruppo6.model.playback.iterators.PlaylistIterator;
 import it.unisa.diem.sad_gruppo6.model.playback.states.PlaybackState;
 import javafx.scene.media.MediaPlayer;
 import javafx.scene.media.Media;
@@ -34,7 +31,6 @@ public class PlaybackService {
     private PlaybackState playbackState;
     private Track currentTrack;
     private static PlaybackService instance;
-    private Timeline timeline;
     private MediaPlayer player;
 
     /**
@@ -84,7 +80,7 @@ public class PlaybackService {
         player.currentTimeProperty().addListener((obs, oldTime, newTime) -> {
             int seconds = (int) newTime.toSeconds();
             if (seconds != playbackState.getCurrentPosition()) {
-                tick();
+                playbackState.seekTo(seconds);
             }
         });
         player.play();
@@ -136,17 +132,4 @@ public class PlaybackService {
         }
     }
 
-    /**
-     * @brief Aggiorna la posizione di riproduzione e notifica gli observer.
-     * @details Chiamato ogni secondo dal listener su {@code currentTimeProperty}
-     *          del {@link MediaPlayer} durante la riproduzione attiva. Invoca
-     *          {@link PlaybackState#incrementPosition()} che incrementa
-     *          {@code currentPosition} e notifica automaticamente tutti gli
-     *          observer, aggiornando barra di avanzamento e contatore.
-     *          Non viene invocato quando il player è in pausa, garantendo che
-     *          il contatore si arresti nella posizione esatta.
-     */
-    private void tick() {
-        playbackState.incrementPosition();
-    }
 }

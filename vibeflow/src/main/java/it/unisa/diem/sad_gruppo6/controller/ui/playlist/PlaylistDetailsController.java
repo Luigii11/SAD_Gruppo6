@@ -332,11 +332,11 @@ public class PlaylistDetailsController implements PlaylistLibraryObserver, Playb
             if (playlistShuffleButton == null) return;
             boolean isShuffleActive = playbackState.getMode() instanceof ShuffleMode;
             if (isShuffleActive) {
-                if (!playlistShuffleButton.getStyleClass().contains("active")) {
-                    playlistShuffleButton.getStyleClass().add("active");
+                if (!playlistShuffleButton.getStyleClass().contains("active-mode-btn")) {
+                    playlistShuffleButton.getStyleClass().add("active-mode-btn");
                 }
             } else {
-                playlistShuffleButton.getStyleClass().remove("active");
+                playlistShuffleButton.getStyleClass().remove("active-mode-btn");
             }
         }
 
@@ -350,11 +350,11 @@ public class PlaylistDetailsController implements PlaylistLibraryObserver, Playb
             if (playlistLoopButton == null) return;
             boolean isLoopActive = playbackState.getMode() instanceof LoopMode;
             if (isLoopActive) {
-                if (!playlistLoopButton.getStyleClass().contains("active")) {
-                    playlistLoopButton.getStyleClass().add("active");
+                if (!playlistLoopButton.getStyleClass().contains("active-mode-btn")) {
+                    playlistLoopButton.getStyleClass().add("active-mode-btn");
                 }
             } else {
-                playlistLoopButton.getStyleClass().remove("active");
+                playlistLoopButton.getStyleClass().remove("active-mode-btn");
             }
         }
 

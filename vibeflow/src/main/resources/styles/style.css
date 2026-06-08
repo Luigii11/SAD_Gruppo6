@@ -193,6 +193,14 @@
     -fx-text-fill: #FF4C30 !important;
 }
 
+.active-mode-btn {
+    -fx-text-fill: #9D4EDD !important;
+}
+
+.active-mode-btn:hover {
+    -fx-text-fill: #B774F0 !important;
+}
+
 /* ========================================================================== */
 /* 5. COMPONENTI DELLA BARRA DEL PLAYER (SLIDER E TESTI BRANO)                */
 /* ========================================================================== */
