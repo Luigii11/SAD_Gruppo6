@@ -159,11 +159,23 @@ public class PlaybackController {
 
     /**
      * @brief Torna al brano precedente nella playlist.
-     * @throws FileNotFoundException Se il file audio della traccia precedente non esiste.
+     * @details Aggiorna la traccia nel PlaybackState tramite l'iteratore e
+     *          riavvia fisicamente il MediaPlayer dal nuovo brano (o dall'inizio
+     *          della traccia corrente se sono trascorsi più di 10 secondi).
+     * @throws FileNotFoundException Se il file audio della traccia non esiste.
      */
     public void previous() throws FileNotFoundException {
-        if (playbackState != null) {
-            playbackState.previous();
+        if (playbackState == null) return;
+
+        Track previousTrack = playbackState.getCurrentTrack();
+        playbackState.previous();
+        Track currentTrack = playbackState.getCurrentTrack();
+
+        // Riavvia sempre il MediaPlayer: sia che sia cambiata traccia,
+        // sia che si sia solo tornati all'inizio della stessa (seekTo(0))
+        if (currentTrack != null) {
+            playbackService.start();
+            playbackService.setOnEndOfTrack(() -> onTrackEnded());
         }
     }
 

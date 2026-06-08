@@ -17,9 +17,11 @@ package it.unisa.diem.sad_gruppo6.model.playback.states;
 
 import it.unisa.diem.sad_gruppo6.model.playback.iterators.PlaylistIterator;
 import it.unisa.diem.sad_gruppo6.model.domain.Track;
+import it.unisa.diem.sad_gruppo6.controller.ui.player.MediaPlayerController;
 import it.unisa.diem.sad_gruppo6.model.domain.Playlist;
 import it.unisa.diem.sad_gruppo6.model.playback.strategies.PlaybackMode;
 import it.unisa.diem.sad_gruppo6.model.playback.strategies.SequentialMode;
+import it.unisa.diem.sad_gruppo6.model.service.PlaybackService;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -163,6 +165,33 @@ public class PlaybackState {
         this.currentPosition = position;
         notifyObservers();
     }
+
+    /**
+     * @brief Incrementa di un secondo la posizione di riproduzione e notifica gli observer.
+     * @details Chiamato ogni secondo da {@link PlaybackService} durante la riproduzione
+     *          attiva. Non viene invocato quando il player è in pausa, garantendo che
+     *          il contatore si arresti nella posizione esatta (AC4).
+     */
+    public void incrementPosition() {
+        this.currentPosition++;
+        notifyObservers();
+    }
+
+    /**
+     * @brief Restituisce il progresso di riproduzione come valore tra 0.0 e 1.0.
+     * @details Usato da {@link MediaPlayerController} per aggiornare la barra di
+     *          avanzamento proporzionalmente alla durata totale della traccia (AC1).
+     *          Restituisce 0.0 se non c'è traccia corrente o la durata è zero.
+     * @return Il progresso normalizzato nell'intervallo [0.0, 1.0].
+     */
+    public double getProgress() {
+        if (currentTrack == null || currentTrack.getDuration() <= 0) {
+            return 0.0;
+        }
+        return (double) currentPosition / currentTrack.getDuration();
+    }
+
+
 
     /**
      * @brief Restituisce l'iteratore usato per scorrere la playlist.
