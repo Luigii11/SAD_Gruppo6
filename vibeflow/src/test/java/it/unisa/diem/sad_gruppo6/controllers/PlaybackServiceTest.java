@@ -26,6 +26,7 @@ import it.unisa.diem.sad_gruppo6.model.domain.Track;
 import it.unisa.diem.sad_gruppo6.model.playback.states.PlaybackState;
 import it.unisa.diem.sad_gruppo6.model.playback.states.PausedState;
 import it.unisa.diem.sad_gruppo6.model.playback.states.PlayingState;
+import it.unisa.diem.sad_gruppo6.model.service.PlaybackService;
 
 public class PlaybackServiceTest {
 
@@ -38,14 +39,17 @@ public class PlaybackServiceTest {
      * nessuna traccia, posizione a 0, stato {@code PausedState}.
      */
     @BeforeEach
-    public void setUp() {
+    public void setUp() throws java.io.IOException {
         state = PlaybackState.getInstance();
-        state.changeState(new PausedState());
-        state.seekTo(0);
-        state.setCurrentTrack(null);
+    state.changeState(new PausedState());
+    state.seekTo(0);
+    state.setCurrentTrack(null);
 
-        // Traccia di durata 5 secondi per rendere i test veloci e precisi
-        testTrack = new Track("Test Song", "Test Artist", 5, "Pop", 2000, null);
+    java.io.File fa = java.io.File.createTempFile("trackA", ".mp3");
+    fa.deleteOnExit(); 
+
+    // Traccia di durata 5 secondi per rendere i test veloci e precisi
+    testTrack = new Track("Test Song", "Test Artist", 5, "Pop", 2000, fa.getAbsolutePath());
     }
 
 
