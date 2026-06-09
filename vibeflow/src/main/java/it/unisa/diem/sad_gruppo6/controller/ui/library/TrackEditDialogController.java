@@ -42,9 +42,6 @@ public class TrackEditDialogController {
     private final TrackController trackController = new TrackController();
     private Track trackToEdit;
 
-    // TODO: @EmanuelChirico - Inietta qui il TrackController di business per gestire l'aggiornamento
-    // private TrackController trackController;
-
     /**
      * @brief Inizializza il form con i dati della traccia selezionata.
      * @param track La traccia da modificare.
@@ -106,13 +103,6 @@ public class TrackEditDialogController {
                 showError("Invalid Year", "Please enter a valid release year (1900 - 2026).");
                 return;
             }
-
-            // =========================================================
-            // ---> AREA DI INTERVENTO BUSINESS LOGIC (TODO) <---
-            // I dati sono stati validati dalla UI.
-            // Il collega dovrà aggiornare i dati usando il suo command/controller.
-            // Es: new EditTrackCommand(trackToEdit, title, author, duration, genre, year).execute();
-            // =========================================================
             
             System.out.println("DEBUG UI: Modifica Validata -> Vecchio Titolo: " + trackToEdit.getTitle() + " | Nuovo: " + title);
             

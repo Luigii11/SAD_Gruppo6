@@ -59,7 +59,7 @@ public class EditTrackCommand implements AppCommand
             }
         }
         
-        playlistLibrary.updatePlaylist(null); // O il metodo equivalente per forzare il notifyObservers()
+        playlistLibrary.updatePlaylist(null); 
     }
 
    /**

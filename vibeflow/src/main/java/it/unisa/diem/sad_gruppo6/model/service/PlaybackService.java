@@ -9,7 +9,6 @@
  * stop() per fermare definitivamente
  * 
  * @version 2.0 - versione con traccia .mp3 reale
->>>>>>> Stashed changes
  * @pattern Service
  * @pattern Singleton
  * @author EmanuelChirico
@@ -55,11 +54,11 @@ public class PlaybackService {
     }
 
     /**
-     * @brief Avvia la riproduzione audio della traccia corrente memorizzata in PlaybackState.
-     * @details Ferma e libera eventuali player attivi prima di crearne uno nuovo.
-     *          Registra un listener su {@code currentTimeProperty} che invoca {@link #tick()}
-     *          ogni secondo per aggiornare la posizione e notificare gli observer.
-     *          Registra inoltre il callback di fine traccia per l'auto-scorrimento.
+     * Avvia la riproduzione audio della traccia corrente memorizzata in PlaybackState.
+     * Ferma e libera eventuali player attivi prima di crearne uno nuovo.
+     * Registra un listener su {@code currentTimeProperty} che invoca {@link #tick()}
+     * ogni secondo per aggiornare la posizione e notificare gli observer.
+     * Registra inoltre il callback di fine traccia per l'auto-scorrimento.
      * @throws FileNotFoundException Se il file audio non esiste nel path originale.
      */
     public void start() throws FileNotFoundException {

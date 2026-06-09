@@ -9,7 +9,7 @@
  * @see PlaylistController
  * @see PlaylistLibraryObserver
  * @see PlayerBarController
- * @author EmanuelaGraziuso, ChiaraCrisci, LuigiAutorino
+ * @author EmanuelaGraziuso, ChiaraCrisci, LuigiAutorino, EmanuelChirico
  */
 
 package it.unisa.diem.sad_gruppo6.controller.ui.playlist;
@@ -233,19 +233,23 @@ public class PlaylistDetailsController implements PlaylistLibraryObserver, Playb
     }
 
     /**
-     * @brief Aggiorna l'icona del pulsante Play/Pausa nell'intestazione in base allo stato del player.
-     * @details Controlla se la playlist attualmente visualizzata coincide con quella in riproduzione.
+     * Aggiorna l'icona del pulsante Play/Pausa nell'intestazione in base allo stato del player.
+     * Controlla se la playlist attualmente visualizzata coincide con quella in riproduzione.
      */
-    private void updateHeaderPlayButton() {
+    private void updateHeaderPlayButton() 
+    {
         String status = playbackState.getStatusName();
-        
-        if ("Playing".equals(status) && currentPlaylist != null && 
-            playbackState.getCurrentTrack() != null && currentPlaylist.getTracks().contains(playbackState.getCurrentTrack())) {
+        Playlist playingPlaylist = playbackState.getCurrentPlaylist();
+    
+        if ("Playing".equals(status) && playingPlaylist != null && playingPlaylist.equals(currentPlaylist)) 
+        {
             playlistPlayPauseButton.setText("⏸");
-        } else {
+        } 
+        else 
+        {
             playlistPlayPauseButton.setText("▶");
         }
-    }
+}
 
     /**
      * @throws FileNotFoundException 
@@ -260,7 +264,8 @@ public class PlaylistDetailsController implements PlaylistLibraryObserver, Playb
         }
         
         String status = playbackState.getStatusName();
-        if (playbackState.getCurrentTrack() != null && currentPlaylist.getTracks().contains(playbackState.getCurrentTrack())) {
+        Playlist playingPlaylist = playbackState.getCurrentPlaylist();
+        if (playingPlaylist != null && playingPlaylist.equals(currentPlaylist)) {
             if ("Playing".equals(status)) {
                 playbackController.pause();
             } else {
@@ -414,9 +419,11 @@ public class PlaylistDetailsController implements PlaylistLibraryObserver, Playb
         Optional<ButtonType> result = confirm.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
             playlistController.removeTrackFromPlaylist(track, currentPlaylist);
+            playbackController.handleTrackRemoved(track);
             refresh();
             showUndoNotification("\"" + track.getTitle() + "\" removed from playlist.");
         }
+
     }
 
     /**

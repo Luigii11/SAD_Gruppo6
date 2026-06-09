@@ -105,6 +105,7 @@ public class PlaybackState {
      */
     public void setCurrentPlaylist(Playlist playlist) {
         this.currentPlaylist = playlist;
+        notifyObservers();
     }
 
     /**

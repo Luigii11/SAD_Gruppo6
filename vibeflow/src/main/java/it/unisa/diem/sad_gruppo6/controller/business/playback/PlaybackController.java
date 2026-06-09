@@ -1,10 +1,8 @@
 /**
  * @file PlaybackController.java
- * @brief Controller di business responsabile della gestione globale della riproduzione audio.
- * @details Coordina l'interazione tra lo stato dell'applicazione (PlaybackState) e il servizio 
+ * Controller di business responsabile della gestione globale della riproduzione audio.
+ * Coordina l'interazione tra lo stato dell'applicazione (PlaybackState) e il servizio 
  * fisico di riproduzione (PlaybackService), garantendo che ci sia sempre un unico flusso audio attivo.
- * @see PlaybackState
- * @see PlaybackService
  * @author EmanuelChirico, LuigiAutorino, ChiaraCrisci
  */
 
@@ -16,6 +14,7 @@ import java.util.List;
 import it.unisa.diem.sad_gruppo6.model.domain.Playlist;
 import it.unisa.diem.sad_gruppo6.model.domain.Track;
 import it.unisa.diem.sad_gruppo6.model.playback.iterators.PlaylistIterator;
+import it.unisa.diem.sad_gruppo6.model.playback.states.PausedState;
 import it.unisa.diem.sad_gruppo6.model.playback.states.PlaybackState;
 import it.unisa.diem.sad_gruppo6.model.playback.states.PlayingState;
 import it.unisa.diem.sad_gruppo6.model.playback.strategies.PlaybackMode;
@@ -25,13 +24,12 @@ import it.unisa.diem.sad_gruppo6.model.service.PlaybackService;
 
 public class PlaybackController {
 
-    /* Attributi */
     private PlaybackState playbackState;
     private PlaybackService playbackService;
 
     /**
-     * @brief Costruttore di default.
-     * @details Recupera le istanze Singleton dello stato e del servizio di riproduzione.
+     * Costruttore di default.
+     * Recupera le istanze Singleton dello stato e del servizio di riproduzione.
      */
     public PlaybackController() {
         this.playbackState = PlaybackState.getInstance();
@@ -53,10 +51,12 @@ public class PlaybackController {
      * @param selectedTrack La traccia da riprodurre.
      * @throws FileNotFoundException Se il file audio della traccia non esiste.
      */
+
     public void play(Track selectedTrack) throws FileNotFoundException {
         if (selectedTrack == null) {
             throw new IllegalArgumentException("Track cannot be null.");
         }
+        playbackState.setCurrentPlaylist(null);
         startPlayback(selectedTrack);
     }
 
@@ -78,33 +78,48 @@ public class PlaybackController {
      * @param startTrack La traccia da cui iniziare l'ascolto.
      * @throws FileNotFoundException Se il file audio della traccia non esiste.
      */
-    public void play(Playlist p, Track startTrack) throws FileNotFoundException {
-        if (p == null || p.getTracks().isEmpty()) {
-            throw new IllegalArgumentException("Empty playlist, impossible to play.");
-        }
-        playbackState.setCurrentPlaylist(p);
-        play(p.getTracks(), startTrack);
+    public void play(Playlist p, Track startTrack) throws FileNotFoundException 
+    {
+        if (p == null || p.getTracks().isEmpty()) 
+            {
+                throw new IllegalArgumentException("Empty playlist, impossible to play.");
+            }
+        play(p.getTracks(), startTrack);        
+        playbackState.setCurrentPlaylist(p);    
     }
 
+    public void handleTrackRemoved(Track t) 
+    {
+        if (t != null && t.equals(playbackState.getCurrentTrack())) 
+            {
+                stop();
+            }
+    }
+
+
     /**
-     * @brief Avvia l'ascolto di una lista generica di brani partendo da uno specifico.
-     * @details Salva la lista corrente in {@link PlaybackState} tramite
-     *          {@code setCurrentTrackList}, così {@link #setMode(PlaybackMode)} può
-     *          sempre ricostruire l'iteratore correttamente sia da Playlist che da
-     *          TrackLibrary. Configura poi l'iteratore in base alla modalità attiva.
+     * Avvia l'ascolto di una lista generica di brani partendo da uno specifico.
+     * Salva la lista corrente in {@link PlaybackState} tramite setCurrentTrackList}, così
+     * PlaybackMode può sempre ricostruire l'iteratore correttamente sia da Playlist che da
+     * TrackLibrary. Configura poi l'iteratore in base alla modalità attiva.
+     * 
      * @param tracks La lista dei brani da usare come contesto.
      * @param startTrack La traccia da cui iniziare la riproduzione.
      * @throws FileNotFoundException Se il file audio della traccia non esiste.
      */
-    public void play(List<Track> tracks, Track startTrack) throws FileNotFoundException {
-        if (tracks == null || tracks.isEmpty()) {
+    public void play(List<Track> tracks, Track startTrack) throws FileNotFoundException 
+    {
+        if (tracks == null || tracks.isEmpty()) 
+        {
             throw new IllegalArgumentException("Empty list, impossible to play it.");
         }
+        
+        playbackState.setCurrentPlaylist(null);   
         playbackState.setCurrentTrackList(tracks);
         PlaylistIterator iterator = playbackState.getMode().getIterator(tracks, startTrack);
         playbackState.setIterator(iterator);
         startPlayback(startTrack);
-    }
+}
 
     /**
      * @brief Logica interna unificata per iniziare l'esecuzione di una traccia.
@@ -138,6 +153,13 @@ public class PlaybackController {
     public void resume() {
         playbackState.play();
         playbackService.resume();
+    }
+        public void stop() 
+    {
+        playbackService.stop();                       
+        playbackState.setCurrentTrack(null);         
+        playbackState.seekTo(0);                       
+        playbackState.changeState(new PausedState());  
     }
 
     /**
