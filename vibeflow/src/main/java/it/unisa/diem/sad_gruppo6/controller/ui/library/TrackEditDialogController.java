@@ -103,9 +103,7 @@ public class TrackEditDialogController {
                 showError("Invalid Year", "Please enter a valid release year (1900 - 2026).");
                 return;
             }
-            
-            System.out.println("DEBUG UI: Modifica Validata -> Vecchio Titolo: " + trackToEdit.getTitle() + " | Nuovo: " + title);
-            
+        
             trackController.editTrack(trackToEdit, title, author, genre, year, path);
             close();
 

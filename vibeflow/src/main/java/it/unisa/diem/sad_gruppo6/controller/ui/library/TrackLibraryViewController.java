@@ -415,6 +415,7 @@ public class TrackLibraryViewController implements TrackLibraryObserver {
         alert.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {
                 CommandManager.getInstance().execute(new RemoveTrackFromLibraryCommand(track));
+                playbackController.handleTrackRemoved(track);
                 showUndoNotification("\"" + track.getTitle() + "\" removed from library.");
             }
         });

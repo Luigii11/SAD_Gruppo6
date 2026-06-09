@@ -19,6 +19,7 @@ import it.unisa.diem.sad_gruppo6.model.domain.Playlist;
 import it.unisa.diem.sad_gruppo6.model.domain.Track;
 import it.unisa.diem.sad_gruppo6.model.library.TrackLibrary;
 import it.unisa.diem.sad_gruppo6.model.library.PlaylistLibrary;
+import it.unisa.diem.sad_gruppo6.model.playback.states.PlaybackState;
 
 public class EditTrackCommand implements AppCommand
 {
@@ -59,7 +60,12 @@ public class EditTrackCommand implements AppCommand
             }
         }
         
-        playlistLibrary.updatePlaylist(null); 
+        playlistLibrary.updatePlaylist(null);
+
+        PlaybackState playbackState = PlaybackState.getInstance();
+        if (playbackState.getCurrentTrack() == oldTrack) {
+            playbackState.setCurrentTrack(updatedTrack);
+        }
     }
 
    /**
