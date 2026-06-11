@@ -18,6 +18,7 @@ package it.unisa.diem.sad_gruppo6.controllers;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,6 +45,10 @@ public class PlaylistDetailsControllerTest {
     private Playlist currentPlaylist;
 
     private Track existingTrack;
+    private Track newTrack;       
+    private Track secondTrack;    
+    private Track notInPlaylist; 
+    private Track t2, t3; 
 
     /**
      * Metodo di setup eseguito prima di ogni singolo test.
@@ -51,7 +56,7 @@ public class PlaylistDetailsControllerTest {
      * Inizializza un ambiente pulito.
      */
     @BeforeEach
-    public void setUp() {
+    public void setUp() throws Exception{
         testPlaylistLibrary = PlaylistLibrary.getInstance();
         testPlaylistLibrary.clear();
 
@@ -68,8 +73,25 @@ public class PlaylistDetailsControllerTest {
         testPlaylistController.createPlaylist("La mia playlist");
         currentPlaylist = testPlaylistLibrary.getPlaylists().get(0);
 
-        existingTrack = new Track("Napule è", "Pino Daniele", 227, "Pop", 1977, null);
+        File f = File.createTempFile("track1_", ".mp3"); 
+        f.deleteOnExit();
+        existingTrack = new Track("Napule è", "Pino Daniele", 227, "Pop", 1977, f.getAbsolutePath());
         testPlaylistController.addTrackToPlaylist(existingTrack, currentPlaylist);
+
+        File fNew = File.createTempFile("track_new_", ".mp3"); fNew.deleteOnExit();
+        newTrack = new Track("Je so' pazzo", "Pino Daniele", 223, "Blues", 1979, fNew.getAbsolutePath());
+
+        File fSecond = File.createTempFile("track_second_", ".mp3"); fSecond.deleteOnExit();
+        secondTrack = new Track("Quanno chiove", "Pino Daniele", 275, "Blues", 1980, fSecond.getAbsolutePath());
+
+        File fNot = File.createTempFile("track_not_", ".mp3"); fNot.deleteOnExit();
+        notInPlaylist = new Track("Albachiara", "Vasco Rossi", 240, "Rock", 1984, fNot.getAbsolutePath());
+
+        File ft2 = File.createTempFile("track_t2_", ".mp3"); ft2.deleteOnExit();
+        t2 = new Track("Je so' pazzo", "Pino Daniele", 223, "Blues", 1979, ft2.getAbsolutePath());
+
+        File ft3 = File.createTempFile("track_t3_", ".mp3"); ft3.deleteOnExit();
+        t3 = new Track("Quanno chiove", "Pino Daniele", 275, "Blues", 1980, ft3.getAbsolutePath());
     }
 
     /**
@@ -79,8 +101,6 @@ public class PlaylistDetailsControllerTest {
      */
     @Test
     public void testAddTrackToPlaylist_success() {
-        Track newTrack = new Track("Je so' pazzo", "Pino Daniele", 223, "Blues", 1979, null);
-
         testPlaylistController.addTrackToPlaylist(newTrack, currentPlaylist);
 
         assertEquals(2, currentPlaylist.getTracks().size(),
@@ -124,8 +144,7 @@ public class PlaylistDetailsControllerTest {
      * della playlist rimangano intatte.
      */
     @Test
-    public void testRemoveTrackFromPlaylist_otherTracksUntouched() {
-        Track secondTrack = new Track("Quanno chiove", "Pino Daniele", 275, "Blues", 1980, null);
+    public void testRemoveTrackFromPlaylist_otherTracksUntouched()  {
         testPlaylistController.addTrackToPlaylist(secondTrack, currentPlaylist);
 
         testPlaylistController.removeTrackFromPlaylist(existingTrack, currentPlaylist);
@@ -143,9 +162,7 @@ public class PlaylistDetailsControllerTest {
      * 
      */
     @Test
-    public void testRemoveTrackFromPlaylist_trackNotPresentThrowsException() {
-        Track notInPlaylist = new Track("Albachiara", "Vasco Rossi", 240, "Rock", 1984, null);
-
+    public void testRemoveTrackFromPlaylist_trackNotPresentThrowsException(){
         assertThrows(IllegalArgumentException.class, () ->
                 testPlaylistController.removeTrackFromPlaylist(notInPlaylist, currentPlaylist),
                 "Dovrebbe lanciare un'eccezione per traccia non presente nella playlist");
@@ -173,9 +190,6 @@ public class PlaylistDetailsControllerTest {
      */
     @Test
     public void testTrackCount_afterAddAndRemove() {
-        Track t2 = new Track("Je so' pazzo", "Pino Daniele", 223, "Blues", 1979, null);
-        Track t3 = new Track("Quanno chiove", "Pino Daniele", 275, "Blues", 1980, null);
-
         testPlaylistController.addTrackToPlaylist(t2, currentPlaylist);
         testPlaylistController.addTrackToPlaylist(t3, currentPlaylist);
         assertEquals(3, currentPlaylist.getTracks().size(),

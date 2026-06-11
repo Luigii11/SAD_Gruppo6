@@ -17,6 +17,8 @@ package it.unisa.diem.sad_gruppo6.controllers;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.io.File;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -29,13 +31,15 @@ public class TrackControllerLibraryDeleteTest{
     private TrackLibrary testLibrary;
     private TrackController testController;
     private Track existingTrack;
+    private Track secondTrack;   
+    private Track notInLibrary; 
 
     /**
      * Setup eseguito prima di ogni test.
      * Svuota il catalogo globale e inserisce una traccia di partenza nella libreria generale.
      */
     @BeforeEach
-    public void setUp() {
+    public void setUp() throws Exception {
         testLibrary = TrackLibrary.getInstance();
         
         // Svuota la libreria in modo manuale se non esiste il metodo clear()
@@ -46,8 +50,17 @@ public class TrackControllerLibraryDeleteTest{
 
         testController = new TrackController();
 
-        existingTrack = new Track("Bohemian Rhapsody", "Queen", 354, "Rock", 1975, null);
+        File f = File.createTempFile("track1_", ".mp3"); 
+        f.deleteOnExit();
+        existingTrack = new Track("Bohemian Rhapsody", "Queen", 354, "Rock", 1975, f.getAbsolutePath());
         testLibrary.addTrack(existingTrack);
+        File fSecond = File.createTempFile("track_second_", ".mp3"); 
+        fSecond.deleteOnExit();
+        secondTrack = new Track("Imagine", "John Lennon", 187, "Pop", 1971, fSecond.getAbsolutePath());
+
+        File fNot = File.createTempFile("track_not_", ".mp3"); 
+        fNot.deleteOnExit();
+        notInLibrary = new Track("Stairway to Heaven", "Led Zeppelin", 482, "Rock", 1971, fNot.getAbsolutePath());
     }
 
     /**
@@ -68,7 +81,7 @@ public class TrackControllerLibraryDeleteTest{
      */
     @Test
     public void testDeletedTrackNotInGeneralLibrary() {
-        Track secondTrack = new Track("Imagine", "John Lennon", 187, "Pop", 1971, null);
+        
         testLibrary.addTrack(secondTrack);
 
         testController.deleteTrack(existingTrack);
@@ -85,8 +98,6 @@ public class TrackControllerLibraryDeleteTest{
      */
     @Test
     public void testDeleteTrackNotInGeneralLibraryThrowsException() {
-        Track notInLibrary = new Track("Stairway to Heaven", "Led Zeppelin", 482, "Rock", 1971, null);
-
         assertThrows(IllegalArgumentException.class, () ->
             testController.deleteTrack(notInLibrary),
             "Dovrebbe lanciare un'eccezione per traccia non presente nella libreria generale"

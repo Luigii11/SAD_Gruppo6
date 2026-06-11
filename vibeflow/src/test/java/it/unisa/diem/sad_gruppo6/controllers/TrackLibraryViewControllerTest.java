@@ -21,6 +21,7 @@ import it.unisa.diem.sad_gruppo6.controller.ui.library.TrackLibraryViewControlle
 import it.unisa.diem.sad_gruppo6.model.domain.Track;
 import it.unisa.diem.sad_gruppo6.model.library.TrackLibrary;
 
+import java.io.File;
 import java.lang.reflect.Field;
 
 
@@ -30,6 +31,7 @@ public class TrackLibraryViewControllerTest {
 
     private TrackLibrary testLibrary;
     private TrackLibraryViewController testController;
+    private Track track1, track2, track3, track4, track5;
 
     /**
      * Metodo di setup eseguito prima di ogni singolo test (@BeforeEach).
@@ -47,6 +49,22 @@ public class TrackLibraryViewControllerTest {
         ((LinkedHashSet<?>) tracksField.get(testLibrary)).clear();
  
         testController = new TrackLibraryViewController();
+
+        Field libraryField = TrackLibraryViewController.class.getDeclaredField("library");
+        libraryField.setAccessible(true);
+        libraryField.set(testController, testLibrary);
+
+        File f1 = File.createTempFile("track1_", ".mp3"); f1.deleteOnExit();
+        File f2 = File.createTempFile("track2_", ".mp3"); f2.deleteOnExit();
+        File f3 = File.createTempFile("track3_", ".mp3"); f3.deleteOnExit();
+        File f4 = File.createTempFile("track4_", ".mp3"); f4.deleteOnExit();
+        File f5 = File.createTempFile("track5_", ".mp3"); f5.deleteOnExit();
+        track1 = new Track("Albachiara", "Vasco Rossi", 240, "Rock", 1984, f1.getAbsolutePath());
+        track2 = new Track("Napule è", "Pino Daniele", 227, "Pop", 1977, f2.getAbsolutePath());
+        track3 = new Track("Je so' pazzo", "Pino Daniele", 223, "Blues", 1979, f3.getAbsolutePath());
+        track4 = new Track("Quanno chiove", "Pino Daniele", 275, "Blues", 1980, f4.getAbsolutePath());
+        track5 = new Track("Yesterday", "The Beatles", 125, "Pop", 1975, f5.getAbsolutePath());
+
     }
 
     /**
@@ -73,9 +91,7 @@ public class TrackLibraryViewControllerTest {
 
     @Test
     public void testOnTrackAdded_libraryContainsTrackWithCorrectMetadata() {
-
-    Track track = new Track("Albachiara", "Vasco Rossi", 240, "Rock", 1984, null);
-    testLibrary.addTrack(track);
+     testLibrary.addTrack(track1);
 
     List<Track> tracks = testLibrary.getTracks();
 
@@ -95,9 +111,9 @@ public class TrackLibraryViewControllerTest {
 
     @Test
     public void testOnTrackAdded_multipleTracksAllRetrievable() {
-    testLibrary.addTrack(new Track("Napule è", "Pino Daniele", 227, "Pop", 1977, null));
-    testLibrary.addTrack(new Track("Je so' pazzo", "Pino Daniele", 223, "Blues", 1979, null));
-    testLibrary.addTrack(new Track("Quanno chiove", "Pino Daniele", 275, "Blues", 1980, null));
+    testLibrary.addTrack(track2);
+    testLibrary.addTrack(track3);
+    testLibrary.addTrack(track4);
 
     List<Track> tracks = testLibrary.getTracks();
 
@@ -110,10 +126,9 @@ public class TrackLibraryViewControllerTest {
      */
     @Test
     public void testDurationFormat_isCorrectlyComputed() {
-    Track track = new Track("Yesterday", "The Beatles", 125, "Pop", 1975, null);
-
-    int min = track.getDuration() / 60;
-    int sec = track.getDuration() % 60;
+   
+    int min = track5.getDuration() / 60;
+    int sec = track5.getDuration() % 60;
     String formatted = String.format("%d:%02d", min, sec);
 
     assertEquals("2:05", formatted,
@@ -126,10 +141,9 @@ public class TrackLibraryViewControllerTest {
      */
     @Test
     public void testOnTrackAdded_libraryIsUpdatedBeforeNotification() {
-    Track track = new Track("Amore senza fine", "Pino Daniele", 259, "Pop/Soul", 1998, null);
-    testLibrary.addTrack(track); // la libreria si aggiorna prima della notifica
-
-    testController.onTrackAdded(track); // il controller viene notificato
+    
+    testLibrary.addTrack(track1);
+    testController.onTrackAdded(track1); // il controller viene notificato
 
     assertEquals(1, testLibrary.getTracks().size(),
             "Dopo onTrackAdded la libreria deve contenere la traccia appena inserita");

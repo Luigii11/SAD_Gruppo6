@@ -17,6 +17,7 @@ package it.unisa.diem.sad_gruppo6.controllers;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.io.File;
 import java.lang.reflect.Field;
 import java.util.LinkedHashSet;
 
@@ -64,8 +65,12 @@ public class UndoAddTrackTest {
         currentPlaylist = new Playlist("Test Playlist", false);
         testPlaylistLibrary.addPlaylist(currentPlaylist);
 
-        trackA = new Track("Napule è", "Pino Daniele", 227, "Pop", 1977, null);
-        trackB = new Track("Je so' pazzo", "Pino Daniele", 223, "Blues", 1979, null);
+       File fA = File.createTempFile("trackA_", ".mp3"); 
+       fA.deleteOnExit();
+       File fB = File.createTempFile("trackB_", ".mp3"); 
+       fB.deleteOnExit();
+       trackA = new Track("Napule è", "Pino Daniele", 227, "Pop", 1977, fA.getAbsolutePath());
+       trackB = new Track("Je so' pazzo", "Pino Daniele", 223, "Blues", 1979, fB.getAbsolutePath());
     }
 
     /**

@@ -18,6 +18,7 @@ package it.unisa.diem.sad_gruppo6.controllers;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.io.File;
 import java.lang.reflect.Field;
 import java.util.LinkedHashSet;
 
@@ -62,9 +63,15 @@ public class UndoRemoveTrackTest {
         historyField.setAccessible(true);
         ((java.util.Stack<?>) historyField.get(testCommandManager)).clear();
 
-        trackA = new Track("Napule è", "Pino Daniele", 227, "Pop", 1977, null);
-        trackB = new Track("Je so' pazzo", "Pino Daniele", 223, "Blues", 1979, null);
-        trackC = new Track("Quanno chiove", "Pino Daniele", 275, "Blues", 1980, null);
+        File fA = File.createTempFile("trackA_", ".mp3"); 
+        fA.deleteOnExit();
+        File fB = File.createTempFile("trackB_", ".mp3"); 
+        fB.deleteOnExit();
+        File fC = File.createTempFile("trackC_", ".mp3"); 
+        fC.deleteOnExit();
+        trackA = new Track("Napule è", "Pino Daniele", 227, "Pop", 1977, fA.getAbsolutePath());
+        trackB = new Track("Je so' pazzo", "Pino Daniele", 223, "Blues", 1979, fB.getAbsolutePath());
+        trackC = new Track("Quanno chiove", "Pino Daniele", 275, "Blues", 1980, fC.getAbsolutePath());
 
         testLibrary.addTrack(trackA);
         testLibrary.addTrack(trackB);
