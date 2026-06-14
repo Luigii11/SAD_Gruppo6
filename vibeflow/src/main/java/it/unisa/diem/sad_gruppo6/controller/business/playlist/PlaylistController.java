@@ -20,6 +20,8 @@ import it.unisa.diem.sad_gruppo6.model.library.PlaylistLibrary;
 import it.unisa.diem.sad_gruppo6.model.library.TrackLibrary;
 import it.unisa.diem.sad_gruppo6.model.factory.GenrePlaylistCreator;
 import it.unisa.diem.sad_gruppo6.model.factory.YearPlaylistCreator;
+import it.unisa.diem.sad_gruppo6.model.domain.Tag;
+import it.unisa.diem.sad_gruppo6.model.factory.TagPlaylistCreator;
 
 public class PlaylistController {
 
@@ -189,16 +191,74 @@ public class PlaylistController {
         }
     }
 
-    /*
     /**
-     * Crea una playlist autogenerata basata su uno specifico Tag.
-     * * @param tag Il tag da utilizzare come filtro.
+     * @brief Crea o aggiorna la playlist automatica associata al tag specificato.
+     *
+     * @details Verifica se nella PlaylistLibrary esiste già una playlist autogenerata
+     *          il cui nome corrisponde al nome del tag (Tag#name(), case-insensitive).
+     *          - Se non esiste: invoca TagPlaylistCreator per costruirla e la aggiunge
+     *            direttamente alla PlaylistLibrary (operazione di sistema non reversibile
+     *            dall'utente, quindi senza passare per CommandManager).
+     *          - Se esiste già: aggiorna la lista delle tracce sostituendo il contenuto
+     *            con quello prodotto dal creator aggiornato, poi notifica gli observer
+     *            tramite PlaylistLibrary#updatePlaylist(Playlist).
+     *          Se il creator non produce alcuna playlist (nessuna traccia con il tag)
+     *          e non esiste già una playlist per quel tag, non viene creato nulla.
+     *
+     * @param tag Il tag per cui aggiornare o creare la playlist automatica.
+     *            Viene ignorato se null.
      */
-    /*
     public void createAutoPlaylist(Tag tag) {
+        if (tag == null) {
+            return;
+        }
 
+        Playlist existing = findAutoPlaylistByName(tag.name());
+
+        TagPlaylistCreator creator = new TagPlaylistCreator(tag);
+        Playlist updated = creator.createPlaylist(trackLibrary.getTracks());
+
+        if (existing == null) {
+            if (updated != null) {
+                playlistLibrary.addPlaylist(updated);
+            }
+        } else {
+            existing.getTracks().clear();
+            if (updated != null) {
+                for (Track t : updated.getTracks()) {
+                    existing.getTracks().add(t);
+                }
+            }
+            playlistLibrary.updatePlaylist(existing);
+        }
     }
-    */
+
+    /**
+     * @brief Rimuove la playlist automatica del tag se nessuna traccia lo possiede più.
+     *
+     * @details Dopo la rimozione di un tag da una traccia (TrackController#removeTag),
+     *          verifica se nella libreria rimane ancora almeno una traccia il cui
+     *          TagSet contiene il tag specificato. Se non ne rimane nessuna, elimina
+     *          la corrispondente playlist autogenerata dalla PlaylistLibrary,
+     *          notificando automaticamente gli observer.
+     *
+     * @param tag Il tag appena rimosso dalla traccia. Viene ignorato se null.
+     */
+    public void removeTagPlaylistIfEmpty(Tag tag) {
+        if (tag == null) {
+            return;
+        }
+
+        boolean tagStillPresent = trackLibrary.getTracks().stream()
+                .anyMatch(t -> t.getTagSet().hasTag(tag));
+
+        if (!tagStillPresent) {
+            Playlist toRemove = findAutoPlaylistByName(tag.name());
+            if (toRemove != null) {
+                playlistLibrary.removePlaylist(toRemove);
+            }
+        }
+    }
 
     /**
      * @brief Crea o aggiorna la playlist automatica associata al genere specificato.

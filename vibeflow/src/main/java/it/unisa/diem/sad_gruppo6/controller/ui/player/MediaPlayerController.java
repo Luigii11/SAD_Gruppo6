@@ -17,6 +17,8 @@ import it.unisa.diem.sad_gruppo6.model.playback.strategies.PlaybackMode;
 import it.unisa.diem.sad_gruppo6.model.playback.strategies.SequentialMode;
 import it.unisa.diem.sad_gruppo6.model.playback.strategies.ShuffleMode;
 import it.unisa.diem.sad_gruppo6.model.playback.strategies.LoopMode;
+import it.unisa.diem.sad_gruppo6.model.domain.Tag;
+import javafx.scene.layout.HBox;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -32,6 +34,7 @@ public class MediaPlayerController implements PlaybackObserver {
     @FXML private Button shuffleButton;
     @FXML private Label timeLabel;
     @FXML private Button loopButton;
+    @FXML private HBox trackTagsBox;
 
     private PlaybackState playbackState;
     private PlaybackController playbackController;
@@ -80,12 +83,17 @@ public class MediaPlayerController implements PlaybackObserver {
                     currentPos / 60, currentPos % 60,
                     totalDuration / 60, totalDuration % 60));
             }
+
+            refreshTrackTags(actualTrack);
         } else {
             trackTitleLabel.setText("No track playing");
             trackAuthorLabel.setText("-");
             progressBar.setValue(0);
             if (timeLabel != null) {
                 timeLabel.setText("0:00 / 0:00");
+            }
+            if (trackTagsBox != null) {
+                trackTagsBox.getChildren().clear();
             }
         }
 
@@ -228,6 +236,38 @@ public class MediaPlayerController implements PlaybackObserver {
             }
         } else {
             loopButton.getStyleClass().remove("active-mode-btn");
+        }
+    }
+
+    /**
+     * @brief Aggiorna le icone dei tag visivi della traccia attualmente in riproduzione.
+     * @details Mostra l'icona FAVOURITE (cuore), e le icone di sistema EXPLICIT e
+     * NEW_RELEASE se presenti nel TagSet della traccia, in linea con il requisito
+     * "ogni tag deve essere visibile in ogni contesto in cui compare la traccia,
+     * incluso il player".
+     *
+     * @param track La traccia correntemente in riproduzione.
+     */
+    private void refreshTrackTags(Track track) {
+        if (trackTagsBox == null) return;
+        trackTagsBox.getChildren().clear();
+
+        if (track.getTagSet().hasTag(Tag.FAVOURITE)) {
+            Label fav = new Label("♥");
+            fav.setStyle("-fx-font-size: 12px; -fx-text-fill: #FF4C30;");
+            trackTagsBox.getChildren().add(fav);
+        }
+        if (track.getTagSet().hasTag(Tag.EXPLICIT)) {
+            Label explicit = new Label("E");
+            explicit.setStyle("-fx-font-size: 10px; -fx-font-weight: bold; -fx-text-fill: #FFFFFF; "
+                    + "-fx-background-color: #888888; -fx-padding: 0 4 0 4; -fx-background-radius: 3;");
+            trackTagsBox.getChildren().add(explicit);
+        }
+        if (track.getTagSet().hasTag(Tag.NEW_RELEASE)) {
+            Label newRel = new Label("NEW");
+            newRel.setStyle("-fx-font-size: 10px; -fx-font-weight: bold; -fx-text-fill: #FFFFFF; "
+                    + "-fx-background-color: #5E27BF; -fx-padding: 0 4 0 4; -fx-background-radius: 3;");
+            trackTagsBox.getChildren().add(newRel);
         }
     }
 

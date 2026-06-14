@@ -3,7 +3,7 @@
  * @brief Controller per la visualizzazione dell'intero catalogo musicale.
  * @details Implementa una logica multi-contesto con gestione dinamica dei controlli di inserimento.
  * Agisce come Observer della TrackLibrary per aggiornare la tabella in tempo reale.
- * @author EmanuelaGraziuso, LuigiAutorino
+ * @author EmanuelaGraziuso, LuigiAutorino, ChiaraCrisci
  */
 
 package it.unisa.diem.sad_gruppo6.controller.ui.library;
@@ -19,6 +19,8 @@ import it.unisa.diem.sad_gruppo6.model.command.AddTrackToPlaylistCommand;
 import it.unisa.diem.sad_gruppo6.model.command.RemoveTrackFromLibraryCommand;
 import it.unisa.diem.sad_gruppo6.model.domain.Playlist;
 import it.unisa.diem.sad_gruppo6.model.domain.Track;
+import it.unisa.diem.sad_gruppo6.model.domain.Tag;
+import it.unisa.diem.sad_gruppo6.controller.business.track.TrackController;
 import it.unisa.diem.sad_gruppo6.model.library.PlaylistLibrary;
 import it.unisa.diem.sad_gruppo6.model.library.TrackLibrary;
 import it.unisa.diem.sad_gruppo6.model.library.TrackLibraryObserver;
@@ -79,7 +81,7 @@ public class TrackLibraryViewController implements TrackLibraryObserver {
     private Playlist targetPlaylist;
     private Timeline undoTimeline;
     private PlaybackState playbackState;
-
+    private TrackController trackController;
     /**
      * @brief Metodo di inizializzazione standard invocato dal framework JavaFX.
      * @details Configura la TableView, inizializza i controller di business,
@@ -89,6 +91,7 @@ public class TrackLibraryViewController implements TrackLibraryObserver {
     @FXML
     public void initialize() {
         this.library = TrackLibrary.getInstance();
+        this.trackController = new TrackController();
         this.playbackController = new PlaybackController();
         this.playlistController = new PlaylistController(
             this.library,
@@ -143,23 +146,38 @@ public class TrackLibraryViewController implements TrackLibraryObserver {
      * @brief Imposta le logiche di estrazione dati per le colonne della tabella.
      */
     private void setupTableView() {
-    titleCol.setCellValueFactory(data -> 
+        titleCol.setCellValueFactory(data -> 
         new SimpleStringProperty(data.getValue().getTitle()));
     titleCol.setCellFactory(col -> new TableCell<>() {
-        @Override
-        protected void updateItem(String title, boolean empty) {
-            super.updateItem(title, empty);
-            if (empty || title == null) {
-                setText(null);
-            } else {
-                Track rowTrack = getTableView().getItems().get(getIndex());
-                Track current = playbackState.getCurrentTrack();
-                String icon = rowTrack.equals(current) ? "▶   " : "♫   ";
-                setText(icon + title);
-            }
-        }
-    });
+            @Override
+            protected void updateItem(String title, boolean empty) {
+                super.updateItem(title, empty);
+                if (empty || title == null) {
+                    setText(null);
+                    setGraphic(null);
+                } else {
+                    Track rowTrack = getTableRow().getItem();
+                    if (rowTrack == null) {
+                        setText(title);
+                        setGraphic(null);
+                        return;
+                    }
+                    Track current = playbackState.getCurrentTrack();
+                    String icon = rowTrack.equals(current) ? "▶   " : "♫   ";
 
+                    Label titleLabel = new Label(icon + title);
+                    titleLabel.setStyle("-fx-text-fill: #FFFFFF; -fx-font-size: 14px; -fx-font-weight: bold;");
+
+                    HBox tagsBox = buildTagIconsBox(rowTrack);
+
+                    HBox cellBox = new HBox(8, titleLabel, tagsBox);
+                    cellBox.setAlignment(Pos.CENTER_LEFT);
+
+                    setText(null);
+                    setGraphic(cellBox);
+                }
+            }
+        });
     authorCol.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getAuthor()));
     
     metaCol.setCellValueFactory(data -> {
@@ -176,9 +194,56 @@ public class TrackLibraryViewController implements TrackLibraryObserver {
  
 
     /**
+     * @brief Costruisce un HBox contenente le icone dei tag attivi su una traccia.
+     * @details Per ogni Tag presente nel TagSet della traccia, crea una Label-icona
+     * (FAVOURITE = cuore pieno, EXPLICIT = "E", NEW_RELEASE = "NEW") e, per il tag
+     * FAVOURITE, registra un handler di click che invoca TrackController.addTag()/removeTag()
+     * a seconda dello stato corrente. I tag di sistema
+     * (EXPLICIT, NEW_RELEASE) sono mostrati ma non cliccabili.
+     *
+     * @param track La traccia di cui visualizzare i tag.
+     * @return Un HBox con le icone dei tag, pronto per essere inserito nella cella.
+     */
+    private HBox buildTagIconsBox(Track track) {
+        HBox box = new HBox(6);
+        box.setAlignment(Pos.CENTER_LEFT);
+
+        // Tag manuale: FAVOURITE (cuore)
+        Label favIcon = new Label(track.getTagSet().hasTag(Tag.FAVOURITE) ? "♥" : "♡");
+        favIcon.setStyle("-fx-font-size: 14px; -fx-cursor: hand; -fx-text-fill: #FF4C30;");
+        favIcon.setOnMouseClicked(e -> {
+            if (track.getTagSet().hasTag(Tag.FAVOURITE)) {
+                trackController.removeTag(track, Tag.FAVOURITE);
+            } else {
+                trackController.addTag(track, Tag.FAVOURITE);
+            }
+            e.consume();
+        });
+        box.getChildren().add(favIcon);
+
+        // Tag di sistema: EXPLICIT
+        if (track.getTagSet().hasTag(Tag.EXPLICIT)) {
+            Label explicitIcon = new Label("E");
+            explicitIcon.setStyle("-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #FFFFFF; "
+                    + "-fx-background-color: #888888; -fx-padding: 1 4 1 4; -fx-background-radius: 3;");
+            box.getChildren().add(explicitIcon);
+        }
+
+        // Tag di sistema: NEW_RELEASE
+        if (track.getTagSet().hasTag(Tag.NEW_RELEASE)) {
+            Label newIcon = new Label("NEW");
+            newIcon.setStyle("-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #FFFFFF; "
+                    + "-fx-background-color: #5E27BF; -fx-padding: 1 4 1 4; -fx-background-radius: 3;");
+            box.getChildren().add(newIcon);
+        }
+
+        return box;
+    }
+
+    /**
      * @brief Forza il ridisegno delle righe per aggiornare l'icona ▶ sulla traccia corrente.
      * @details Chiamato ad ogni notifica Observer del PlaybackState, funziona sia
-     *          in modalità sequenziale che shuffle (AC3 ID_15).
+     *          in modalità sequenziale che shuffle.
      */
     private void refreshTrackIcons() {
         if (trackTable != null) {
