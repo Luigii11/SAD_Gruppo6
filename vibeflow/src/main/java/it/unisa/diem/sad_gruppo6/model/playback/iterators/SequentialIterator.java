@@ -100,7 +100,21 @@ public class SequentialIterator implements PlaylistIterator {
         this.currentIndex = 0;
     }
 
+    @Override
     public void updateTracks(List<Track> newTracks) {
+        // 1. Aggiorniamo il riferimento della lista con quella nuova riordinata
         this.tracks = newTracks;
+        
+        // 2. FONTE DELLA VERITÀ: Chiediamo allo stato globale qual è la traccia che sta suonando ORA
+        Track playingTrack = it.unisa.diem.sad_gruppo6.model.playback.states.PlaybackState.getInstance().getCurrentTrack();
+        
+        // 3. Cerchiamo la posizione esatta del brano in esecuzione nella nuova classifica
+        if (playingTrack != null) {
+            int newPosition = this.tracks.indexOf(playingTrack);
+            if (newPosition != -1) {
+                // Allineiamo il puntatore: ora l'iteratore sa esattamente dove si trova!
+                this.currentIndex = newPosition;
+            }
+        }
     }
 }

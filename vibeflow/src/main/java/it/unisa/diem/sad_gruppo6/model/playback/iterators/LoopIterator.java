@@ -15,6 +15,7 @@
 package it.unisa.diem.sad_gruppo6.model.playback.iterators;
 
 import it.unisa.diem.sad_gruppo6.model.domain.Track;
+import it.unisa.diem.sad_gruppo6.model.playback.strategies.LoopMode;
 
 import java.util.List;
 
@@ -128,7 +129,20 @@ public class LoopIterator implements PlaylistIterator {
         this.currentIndex = 0;
     }
 
+    @Override
     public void updateTracks(List<Track> newTracks) {
+        // 1. Aggiorniamo il riferimento della lista
         this.tracks = newTracks;
+        
+        // 2. Chiediamo allo stato globale qual è la traccia in riproduzione
+        Track playingTrack = it.unisa.diem.sad_gruppo6.model.playback.states.PlaybackState.getInstance().getCurrentTrack();
+        
+        // 3. Riallineiamo l'indice circolare
+        if (playingTrack != null) {
+            int newPosition = this.tracks.indexOf(playingTrack);
+            if (newPosition != -1) {
+                this.currentIndex = newPosition;
+            }
+        }
     }
 }
