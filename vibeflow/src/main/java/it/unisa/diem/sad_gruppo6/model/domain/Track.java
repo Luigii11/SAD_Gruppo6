@@ -2,7 +2,7 @@
  * @file Track.java
  * Classe di definizione di un oggetto di tipo 'Track'.
  * 
- * @author EmanuelChirico
+ * @author EmanuelChirico, ChiaraCrisci
  */
 
 package it.unisa.diem.sad_gruppo6.model.domain;
@@ -22,7 +22,7 @@ public class Track
     private int year; 
     private int playCount;
     private String path;
-
+    private final TagSet tagSet;
     /**
      * Costruttore classe 'Track'.
      * 
@@ -44,6 +44,7 @@ public class Track
         setPath(path);
         setDuration(duration);
         this.playCount = 0;
+        this.tagSet = new TagSet();
     }
 
     // Getter e Setter
@@ -188,6 +189,18 @@ public class Track
      */
     public String getPath(){
         return this.path;
+    }
+
+    /**
+     * @brief Restituisce l'insieme dei tag visivi associati alla traccia.
+     * @details Espone l'oggetto TagSet incapsulato, usato da TrackController
+     * per assegnare/rimuovere tag manuali e tag di sistema.
+     *
+     * @return Il TagSet associato a questa traccia.
+     */
+    public TagSet getTagSet()
+    {
+        return tagSet;
     }
 
      /**
