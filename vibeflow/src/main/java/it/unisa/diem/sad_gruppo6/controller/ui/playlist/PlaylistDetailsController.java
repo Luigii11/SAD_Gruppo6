@@ -32,8 +32,12 @@ import it.unisa.diem.sad_gruppo6.model.playback.strategies.PlaybackMode;
 import it.unisa.diem.sad_gruppo6.model.playback.strategies.SequentialMode;
 import it.unisa.diem.sad_gruppo6.model.playback.strategies.ShuffleMode;
 import it.unisa.diem.sad_gruppo6.model.playback.strategies.LoopMode;
+import it.unisa.diem.sad_gruppo6.model.domain.Tag;
+import it.unisa.diem.sad_gruppo6.controller.business.track.TrackController;
+import javafx.scene.control.Label;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.fxml.FXML;
+import javafx.geometry.Pos;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
@@ -90,6 +94,7 @@ public class PlaylistDetailsController implements PlaylistLibraryObserver, Playb
     private PlaybackState playbackState;
     private PlaybackController playbackController;
     private Timeline undoTimeline;
+    private TrackController trackController;
 
     /**
      * @brief Inizializzazione del contesto e registrazione degli Observer.
@@ -112,7 +117,8 @@ public class PlaylistDetailsController implements PlaylistLibraryObserver, Playb
         this.playbackController = new PlaybackController();
         this.playlistLibrary.registerObserver(this);
         this.playbackState.registerObserver(this); 
-        
+        this.trackController = new TrackController();
+
         setupTableView(); 
         refresh();
         updateHeaderPlayButton(); 
@@ -153,20 +159,34 @@ public class PlaylistDetailsController implements PlaylistLibraryObserver, Playb
      * Drag&Drop per il riordinamento manuale delle tracce.
      */
     private void setupTableView() {
-        // --- SETUP COLONNE (Intatto) ---
-        titleCol.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getTitle()));
+      titleCol.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getTitle()));
         titleCol.setCellFactory(col -> new TableCell<>() {
             @Override
             protected void updateItem(String title, boolean empty) {
                 super.updateItem(title, empty);
                 if (empty || title == null) {
                     setText(null);
+                    setGraphic(null);
                 } else {
-                    Track rowTrack = getTableView().getItems().get(getIndex());
+                    Track rowTrack = getTableRow().getItem();
+                    if (rowTrack == null) {
+                        setText(title);
+                        setGraphic(null);
+                        return;
+                    }
                     Track current = playbackState.getCurrentTrack();
-                    // Mostra ▶ se è il brano corrente (funziona anche con ShuffleIterator), ♫ altrimenti
                     String icon = rowTrack.equals(current) ? "▶   " : "♫   ";
-                    setText(icon + title);
+
+                    Label titleLabel = new Label(icon + title);
+                    titleLabel.setStyle("-fx-text-fill: #FFFFFF; -fx-font-size: 14px; -fx-font-weight: bold;");
+
+                    HBox tagsBox = buildTagIconsBox(rowTrack);
+
+                    HBox cellBox = new HBox(8, titleLabel, tagsBox);
+                    cellBox.setAlignment(Pos.CENTER_LEFT);
+
+                    setText(null);
+                    setGraphic(cellBox);
                 }
             }
         });
@@ -203,6 +223,8 @@ public class PlaylistDetailsController implements PlaylistLibraryObserver, Playb
                 }
             }
         });
+
+        
 
         // --- SETUP DRAG & DROP PER IL RIORDINAMENTO ---
         trackTable.setRowFactory(tv -> {
@@ -570,5 +592,52 @@ public class PlaylistDetailsController implements PlaylistLibraryObserver, Playb
         alert.setHeaderText(title);
         DialogUtils.personalizza(alert, trackTable, type == AlertType.ERROR ? "❌" : "⚠", type == AlertType.ERROR ? "#FF4C30" : "#FF6E57");
         alert.showAndWait();
+    }
+
+    /**
+     * @brief Costruisce un HBox contenente le icone dei tag attivi su una traccia.
+     * @details Per ogni Tag presente nel TagSet della traccia, crea una Label-icona
+     * (FAVOURITE = cuore pieno, EXPLICIT = "E", NEW_RELEASE = "NEW") e, per il tag
+     * FAVOURITE, registra un handler di click che invoca TrackController.addTag()/removeTag()
+     * a seconda dello stato corrente. I tag di sistema
+     * (EXPLICIT, NEW_RELEASE) sono mostrati ma non cliccabili.
+     *
+     * @param track La traccia di cui visualizzare i tag.
+     * @return Un HBox con le icone dei tag, pronto per essere inserito nella cella.
+     */
+    private HBox buildTagIconsBox(Track track) {
+        HBox box = new HBox(6);
+        box.setAlignment(Pos.CENTER_LEFT);
+
+        // Tag manuale: FAVOURITE (cuore)
+        Label favIcon = new Label(track.getTagSet().hasTag(Tag.FAVOURITE) ? "♥" : "♡");
+        favIcon.setStyle("-fx-font-size: 14px; -fx-cursor: hand; -fx-text-fill: #FF4C30;");
+        favIcon.setOnMouseClicked(e -> {
+            if (track.getTagSet().hasTag(Tag.FAVOURITE)) {
+                trackController.removeTag(track, Tag.FAVOURITE);
+            } else {
+                trackController.addTag(track, Tag.FAVOURITE);
+            }
+            e.consume();
+        });
+        box.getChildren().add(favIcon);
+
+        // Tag di sistema: EXPLICIT
+        if (track.getTagSet().hasTag(Tag.EXPLICIT)) {
+            Label explicitIcon = new Label("E");
+            explicitIcon.setStyle("-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #FFFFFF; "
+                    + "-fx-background-color: #888888; -fx-padding: 1 4 1 4; -fx-background-radius: 3;");
+            box.getChildren().add(explicitIcon);
+        }
+
+        // Tag di sistema: NEW_RELEASE
+        if (track.getTagSet().hasTag(Tag.NEW_RELEASE)) {
+            Label newIcon = new Label("NEW");
+            newIcon.setStyle("-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #FFFFFF; "
+                    + "-fx-background-color: #5E27BF; -fx-padding: 1 4 1 4; -fx-background-radius: 3;");
+            box.getChildren().add(newIcon);
+        }
+
+        return box;
     }
 }
