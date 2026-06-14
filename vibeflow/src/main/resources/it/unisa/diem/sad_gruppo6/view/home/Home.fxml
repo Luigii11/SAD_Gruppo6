@@ -58,9 +58,12 @@
 
                <Separator styleClass="content-separator" />
 
-               <HBox alignment="CENTER_LEFT">
-                  <Label styleClass="section-tag, automatic-playlists" text="AUTOMATIC PLAYLISTS" />
-               </HBox>
+               <VBox fx:id="autoPlaylistSection" managed="false" spacing="20.0" visible="false">
+                  <HBox alignment="CENTER_LEFT">
+                     <Label styleClass="section-tag, automatic-playlists" text="AUTOMATIC PLAYLISTS" />
+                  </HBox>
+                  <TilePane fx:id="autoPlaylistTilePane" hgap="20.0" prefColumns="3" styleClass="transparent-pane" vgap="20.0" />
+               </VBox>
 
             </VBox>
          </content>
