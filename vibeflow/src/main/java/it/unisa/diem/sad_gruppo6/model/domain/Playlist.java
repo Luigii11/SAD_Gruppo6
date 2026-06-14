@@ -113,16 +113,24 @@ public class Playlist {
     
 
     /**
-     * Riordina la posizione di una traccia all'interno della playlist.
-     * * @param t La traccia da spostare.
-     * @param newIndex Il nuovo indice (posizione) in cui inserire la traccia.
+     * @brief Sposta una traccia in una nuova posizione all'interno della playlist.
+     * @param t La traccia da spostare.
+     * @param newIndex Il nuovo indice in cui inserire la traccia.
+     * @throws IllegalArgumentException Se la traccia non esiste o l'indice non è valido.
      */
-
-    /*
     public void reorder(Track t, int newIndex) {
+        int oldIndex = tracks.indexOf(t);
         
+        if (oldIndex == -1) {
+            throw new IllegalArgumentException("La traccia non è presente in questa playlist.");
+        }
+        if (newIndex < 0 || newIndex > tracks.size() - 1) {
+            throw new IllegalArgumentException("Indice di destinazione non valido.");
+        }
+        
+        tracks.remove(oldIndex);
+        tracks.add(newIndex, t);
     }
-    */
 
     /**
      * Restituisce la rappresentazione testuale della playlist.
