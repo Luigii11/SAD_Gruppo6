@@ -41,13 +41,11 @@ public class TrackController
         );
     }
 
-/**
+    /**
      * @brief Crea una nuova traccia, la aggiunge alla libreria e assegna i tag di sistema.
      * @details Dopo la costruzione della Track, assegna automaticamente Tag.NEW_RELEASE
-     * se l'anno di pubblicazione coincide con l'anno corrente.
-     * L'assegnazione di Tag.EXPLICIT è demandata a {@link #assignSystemTags(Track, boolean)}
-     * e può essere richiesta dai metadati del file audio in una fase successiva
-     * (estensione futura senza modificare la firma pubblica del metodo).
+     * se l'anno di pubblicazione coincide con l'anno corrente, e Tag.EXPLICIT in modo
+     * casuale (simulazione dell'elaborazione dei metadati in fase di importazione).
      * Questi tag non sono modificabili dall'utente, in coerenza con
      * {@link it.unisa.diem.sad_gruppo6.model.domain.TagSet#setSystemTag(Tag)}.
      *
@@ -69,6 +67,12 @@ public class TrackController
         commandManager.execute(command);
         playlistController.createAutoPlaylist(genre);
         playlistController.createAutoPlaylist(year);
+
+        for (Tag t : track.getTagSet().getTags()) {
+            if (t != Tag.FAVOURITE) {
+                playlistController.createAutoPlaylist(t);
+            }
+        }
     }
 
     /**
@@ -142,9 +146,10 @@ public class TrackController
 
     /**
      * @brief Aggiunge un tag gestibile dall'utente a una traccia.
-     * @details Delega al TagSet della traccia (ID_21, AC2) e notifica gli
-     * observer della libreria affinché la UI aggiorni istantaneamente
-     * lo stato dell'icona (AC6).
+     * @details Delega al TagSet della traccia, notifica gli
+     * observer della libreria affinché la UI aggiorni istantaneamente lo stato
+     * dell'icona, e aggiorna/crea la playlist automatica corrispondente
+     * al tag tramite PlaylistController#createAutoPlaylist(Tag).
      *
      * @param track La traccia a cui aggiungere il tag.
      * @param tag Il tag da assegnare (deve essere gestibile dall'utente, es. FAVOURITE).
@@ -158,13 +163,18 @@ public class TrackController
         }
         track.getTagSet().addTag(tag);
         library.notifyTrackUpdated(track);
+        playlistController.createAutoPlaylist(tag);
+        if (tag != Tag.FAVOURITE) {
+            playlistController.createAutoPlaylist(tag);
+        }
     }
 
     /**
      * @brief Rimuove un tag gestibile dall'utente da una traccia.
-     * @details Delega al TagSet della traccia (ID_21, AC3) e notifica gli
-     * observer della libreria affinché la UI aggiorni istantaneamente
-     * lo stato dell'icona (AC6).
+     * @details Delega al TagSet della traccia, notifica gli
+     * observer della libreria affinché la UI aggiorni istantaneamente lo stato
+     * dell'icona (AC6), aggiorna la playlist automatica corrispondente al tag
+     * e, se nessuna traccia possiede più il tag, la rimuove dalla PlaylistLibrary.
      *
      * @param track La traccia da cui rimuovere il tag.
      * @param tag Il tag da rimuovere (deve essere gestibile dall'utente, es. FAVOURITE).
@@ -178,6 +188,16 @@ public class TrackController
         }
         track.getTagSet().removeTag(tag);
         library.notifyTrackUpdated(track);
+        playlistController.createAutoPlaylist(tag);
+        playlistController.removeTagPlaylistIfEmpty(tag);
+
+        if (tag != Tag.FAVOURITE) {
+            playlistController.createAutoPlaylist(tag);
+            playlistController.removeTagPlaylistIfEmpty(tag);
+        }
     }
+
+
+    
 
 }
