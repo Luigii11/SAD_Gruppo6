@@ -17,6 +17,8 @@ import it.unisa.diem.sad_gruppo6.model.domain.Playlist;
 import it.unisa.diem.sad_gruppo6.model.domain.Track;
 import it.unisa.diem.sad_gruppo6.model.library.PlaylistLibrary;
 import it.unisa.diem.sad_gruppo6.model.library.TrackLibrary;
+import it.unisa.diem.sad_gruppo6.model.factory.GenrePlaylistCreator;
+import it.unisa.diem.sad_gruppo6.model.factory.YearPlaylistCreator;
 
 public class PlaylistController {
 
@@ -193,25 +195,154 @@ public class PlaylistController {
     }
     */
 
-    /*
     /**
-     * Crea una playlist autogenerata basata su uno specifico genere musicale.
-     * * @param genre Il genere musicale da utilizzare come filtro.
+     * @brief Crea o aggiorna la playlist automatica associata al genere specificato.
+     *
+     * @details Verifica se nella PlaylistLibrary esiste già una playlist autogenerata
+     *          il cui nome corrisponde al genere (confronto case-insensitive).
+     *          - Se non esiste: invoca GenrePlaylistCreator per costruirla
+     *            e la aggiunge direttamente alla PlaylistLibrary (senza passare per
+     *            CommandManager, perché è un'operazione di sistema non reversibile dall'utente).
+     *          - Se esiste già: aggiorna la lista delle tracce sostituendo il contenuto
+     *            con quello prodotto dal creator aggiornato, poi notifica gli observer
+     *            tramite PlaylistLibrary#updatePlaylist(Playlist).
+     *          In entrambi i casi la PlaylistLibrary notifica gli observer.
+     *
+     * @param genre Il genere musicale per cui aggiornare o creare la playlist automatica.
+     *              Viene ignorato se null o blank.
      */
-    /*
+    
     public void createAutoPlaylist(String genre) {
-        
-    }
-    */
+        if (genre == null || genre.isBlank()) {
+            return;
+        }
+        // Cerca se esiste già una playlist autogenerata per questo genere
+        Playlist existing = findAutoPlaylistByName(genre);
 
-    /*
-    /**
-     * Crea una playlist autogenerata basata su uno specifico anno di pubblicazione.
-     * * @param year L'anno da utilizzare come filtro.
-     */
-    /*
-    public void createAutoPlaylist(int year) {
-        
+        GenrePlaylistCreator creator = new GenrePlaylistCreator(genre);
+        Playlist updated = creator.createPlaylist(trackLibrary.getTracks());
+
+        if (existing == null) {
+            if (updated != null) {
+                playlistLibrary.addPlaylist(updated);
+            }
+        } else {
+            existing.getTracks().clear();
+            if (updated != null) {
+                for (Track t : updated.getTracks()) {
+                    existing.getTracks().add(t);
+                }
+            }
+            playlistLibrary.updatePlaylist(existing);
+        }
     }
-    */
+    
+    /**
+     * @brief Rimuove la playlist automatica di genere se non esistono più tracce di quel genere.
+     *
+     * @details Dopo la rimozione di una traccia dalla TrackLibrary, verifica se nella
+     *          libreria rimangono ancora tracce con il genere specificato.
+     *          Se non ne rimane nessuna, elimina la corrispondente playlist autogenerata
+     *          dalla PlaylistLibrary, notificando automaticamente gli observer.
+     *
+     * @param genre Il genere della traccia appena rimossa. Viene ignorato se null o blank.
+     */
+    public void removeGenrePlaylistIfEmpty(String genre) {
+        if (genre == null || genre.isBlank()) {
+            return;
+        }
+        boolean genreStillPresent = trackLibrary.getTracks().stream()
+                .anyMatch(t -> genre.equalsIgnoreCase(t.getGenre()));
+
+        if (!genreStillPresent) {
+            Playlist toRemove = findAutoPlaylistByName(genre);
+            if (toRemove != null) {
+                playlistLibrary.removePlaylist(toRemove);
+            }
+        }
+    }
+
+    
+    /**
+     * @brief Crea o aggiorna la playlist automatica associata all'anno specificato.
+     *
+     * @details Verifica se esiste già una playlist autogenerata il cui nome corrisponde all'anno (come stringa).
+     *          - Se non esiste: invoca YearPlaylistCreator per costruirla e la aggiunge
+     *            direttamente alla PlaylistLibrary.
+     *          - Se esiste già: aggiorna il contenuto con le tracce aggiornate.
+     *          Viene ignorato se year <= 0.
+     *
+     * @param year L'anno di pubblicazione per cui aggiornare o creare la playlist automatica. 
+     */
+    
+    public void createAutoPlaylist(int year) {
+        if (year <= 0) {
+                    return;
+                }
+                String yearName = String.valueOf(year);
+                Playlist existing = findAutoPlaylistByName(yearName);
+        
+                YearPlaylistCreator creator = new YearPlaylistCreator(year);
+                Playlist updated = creator.createPlaylist(trackLibrary.getTracks());
+        
+                if (existing == null) {
+                    if (updated != null) {
+                        playlistLibrary.addPlaylist(updated);
+                    }
+                } else {
+                    existing.getTracks().clear();
+                    if (updated != null) {
+                        for (Track t : updated.getTracks()) {
+                            existing.getTracks().add(t);
+                        }
+                    }
+                    playlistLibrary.updatePlaylist(existing);
+                }
+    }
+
+    /**
+     * @brief Rimuove la playlist automatica di anno se non esistono più tracce di quell'anno.
+     *
+     * @details Dopo la rimozione di una traccia dalla TrackLibrary, verifica se rimangono ancora tracce con quell'anno.
+     *          Se non ne rimane nessuna, elimina la corrispondente playlist autogenerata.
+     *
+     * @param year L'anno della traccia appena rimossa. Viene ignorato se <= 0.
+     */
+    public void removeYearPlaylistIfEmpty(int year) {
+        if (year <= 0) {
+            return;
+        }
+        String yearName = String.valueOf(year);
+        boolean yearStillPresent = trackLibrary.getTracks().stream()
+                .anyMatch(t -> t.getYear() == year);
+ 
+        if (!yearStillPresent) {
+            Playlist toRemove = findAutoPlaylistByName(yearName);
+            if (toRemove != null) {
+                playlistLibrary.removePlaylist(toRemove);
+            }
+        }
+    }
+    
+
+
+    /**
+     * @brief Cerca nella PlaylistLibrary una playlist autogenerata con il nome specificato.
+     *
+     * @details Usato internamente da createAutoPlay(String) e
+     *         removeGenrePlaylistIfEmpty(String) per evitare duplicazioni di ricerca.
+     *          Il confronto sul nome è case-insensitive e considera solo le playlist
+     *          con isAutoGenerated() == true.
+     *
+     * @param name Il nome da cercare (corrisponde al genere per le playlist di genere).
+     * @return La playlist trovata, oppure null se non esiste.
+     */
+    private Playlist findAutoPlaylistByName(String name) {
+        for (Playlist p : playlistLibrary.getPlaylists()) {
+            if (p.isAutoGenerated() && p.getName().equalsIgnoreCase(name)) {
+                return p;
+            }
+        }
+        return null;
+    }
 }

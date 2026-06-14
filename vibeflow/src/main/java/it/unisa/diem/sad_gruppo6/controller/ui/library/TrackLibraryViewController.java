@@ -10,6 +10,7 @@ package it.unisa.diem.sad_gruppo6.controller.ui.library;
 
 import it.unisa.diem.sad_gruppo6.App;
 import it.unisa.diem.sad_gruppo6.controller.business.playback.PlaybackController;
+import it.unisa.diem.sad_gruppo6.controller.business.playlist.PlaylistController;
 import it.unisa.diem.sad_gruppo6.controller.ui.player.MediaPlayerController;
 import it.unisa.diem.sad_gruppo6.controller.ui.playlist.PlaylistDetailsController;
 import it.unisa.diem.sad_gruppo6.controller.ui.utils.DialogUtils;
@@ -73,6 +74,7 @@ public class TrackLibraryViewController implements TrackLibraryObserver {
 
     private TrackLibrary library;
     private PlaybackController playbackController;
+    private PlaylistController playlistController;
     private boolean isSelectionMode = false;
     private Playlist targetPlaylist;
     private Timeline undoTimeline;
@@ -88,6 +90,11 @@ public class TrackLibraryViewController implements TrackLibraryObserver {
     public void initialize() {
         this.library = TrackLibrary.getInstance();
         this.playbackController = new PlaybackController();
+        this.playlistController = new PlaylistController(
+            this.library,
+            PlaylistLibrary.getInstance(),
+            CommandManager.getInstance()
+        );
         this.playbackState = PlaybackState.getInstance();
         this.playbackState.registerObserver(state -> refreshTrackIcons());
 
@@ -438,7 +445,11 @@ public class TrackLibraryViewController implements TrackLibraryObserver {
 
         alert.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {
+                String genre = track.getGenre();
+                int year = track.getYear();
                 CommandManager.getInstance().execute(new RemoveTrackFromLibraryCommand(track));
+                playlistController.removeGenrePlaylistIfEmpty(genre);
+                playlistController.removeYearPlaylistIfEmpty(year);
                 playbackController.handleTrackRemoved(track);
                 showUndoNotification("\"" + track.getTitle() + "\" removed from library.");
             }

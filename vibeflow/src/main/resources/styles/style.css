@@ -279,6 +279,10 @@
     -fx-text-fill: #FFFFFF !important;
 }
 
+.auto-playlist-card .card-icon {
+    -fx-text-fill: #FF4C30;
+}
+
 /* ========================================================================== */
 /* 7. MENU CONTESTUALI (TENDINE DELLE OPZIONI)                                */
 /* ========================================================================== */
