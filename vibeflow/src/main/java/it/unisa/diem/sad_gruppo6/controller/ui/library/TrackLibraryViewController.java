@@ -16,7 +16,6 @@ import it.unisa.diem.sad_gruppo6.controller.ui.playlist.PlaylistDetailsControlle
 import it.unisa.diem.sad_gruppo6.controller.ui.utils.DialogUtils;
 import it.unisa.diem.sad_gruppo6.model.command.CommandManager;
 import it.unisa.diem.sad_gruppo6.model.command.AddTrackToPlaylistCommand;
-import it.unisa.diem.sad_gruppo6.model.command.RemoveTrackFromLibraryCommand;
 import it.unisa.diem.sad_gruppo6.model.domain.Playlist;
 import it.unisa.diem.sad_gruppo6.model.domain.Track;
 import it.unisa.diem.sad_gruppo6.model.domain.Tag;
@@ -435,7 +434,7 @@ public class TrackLibraryViewController implements TrackLibraryObserver {
 
     private void handleDeleteButtonClick(Track track) {
         if (track == null) return;
-        
+
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Confirm Deletion");
         alert.setHeaderText("Remove from Track Library?");
@@ -444,12 +443,7 @@ public class TrackLibraryViewController implements TrackLibraryObserver {
 
         alert.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {
-                String genre = track.getGenre();
-                int year = track.getYear();
-                
-                CommandManager.getInstance().execute(new RemoveTrackFromLibraryCommand(track));
-                playlistController.removeGenrePlaylistIfEmpty(genre);
-                playlistController.removeYearPlaylistIfEmpty(year);
+                trackController.deleteTrack(track);
                 playbackController.handleTrackRemoved(track);
             }
         });
