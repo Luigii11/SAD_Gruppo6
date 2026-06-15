@@ -43,9 +43,6 @@ import javafx.scene.layout.HBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
-import javafx.animation.KeyFrame;
-import javafx.animation.Timeline;
-import javafx.util.Duration;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -67,21 +64,16 @@ public class TrackLibraryViewController implements TrackLibraryObserver {
     @FXML private TableColumn<Track, String> durationCol;
     @FXML private TableColumn<Track, Void> actionCol;
     @FXML private Button addTrackButton; 
-    @FXML private HBox   undoNotificationBar;
-    @FXML private Label  undoMessageLabel;
-    @FXML private Label  undoCountdownLabel;
-    @FXML private Button undoCancelButton;
     @FXML private MediaPlayerController mediaPlayerController;
-
 
     private TrackLibrary library;
     private PlaybackController playbackController;
     private PlaylistController playlistController;
     private boolean isSelectionMode = false;
     private Playlist targetPlaylist;
-    private Timeline undoTimeline;
     private PlaybackState playbackState;
     private TrackController trackController;
+
     /**
      * @brief Metodo di inizializzazione standard invocato dal framework JavaFX.
      * @details Configura la TableView, inizializza i controller di business,
@@ -111,7 +103,6 @@ public class TrackLibraryViewController implements TrackLibraryObserver {
             if (event.getClickCount() == 2 && !isSelectionMode) {
                 Track selectedTrack = trackTable.getSelectionModel().getSelectedItem();
                 if (selectedTrack != null) {
-                    // Avvia la riproduzione passando l'intera lista e il brano di partenza
                     try {
                         playbackController.play(library.getTracks(), selectedTrack);
                     } catch (FileNotFoundException e) {
@@ -148,7 +139,7 @@ public class TrackLibraryViewController implements TrackLibraryObserver {
     private void setupTableView() {
         titleCol.setCellValueFactory(data -> 
         new SimpleStringProperty(data.getValue().getTitle()));
-    titleCol.setCellFactory(col -> new TableCell<>() {
+        titleCol.setCellFactory(col -> new TableCell<>() {
             @Override
             protected void updateItem(String title, boolean empty) {
                 super.updateItem(title, empty);
@@ -178,29 +169,23 @@ public class TrackLibraryViewController implements TrackLibraryObserver {
                 }
             }
         });
-    authorCol.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getAuthor()));
+        
+        authorCol.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getAuthor()));
     
-    metaCol.setCellValueFactory(data -> {
-        String genre = data.getValue().getGenre() != null ? data.getValue().getGenre() : "Unknown";
-        String year = data.getValue().getYear() > 0 ? String.valueOf(data.getValue().getYear()) : "----";
-        return new SimpleStringProperty(genre + "  •  " + year);
-    });
+        metaCol.setCellValueFactory(data -> {
+            String genre = data.getValue().getGenre() != null ? data.getValue().getGenre() : "Unknown";
+            String year = data.getValue().getYear() > 0 ? String.valueOf(data.getValue().getYear()) : "----";
+            return new SimpleStringProperty(genre + "  •  " + year);
+        });
 
-    durationCol.setCellValueFactory(data -> {
-        int totalSeconds = data.getValue().getDuration();
-        return new SimpleStringProperty(String.format("%d:%02d", totalSeconds / 60, totalSeconds % 60));
-    });
-}
- 
+        durationCol.setCellValueFactory(data -> {
+            int totalSeconds = data.getValue().getDuration();
+            return new SimpleStringProperty(String.format("%d:%02d", totalSeconds / 60, totalSeconds % 60));
+        });
+    }
 
     /**
      * @brief Costruisce un HBox contenente le icone dei tag attivi su una traccia.
-     * @details Per ogni Tag presente nel TagSet della traccia, crea una Label-icona
-     * (FAVOURITE = cuore pieno, EXPLICIT = "E", NEW_RELEASE = "NEW") e, per il tag
-     * FAVOURITE, registra un handler di click che invoca TrackController.addTag()/removeTag()
-     * a seconda dello stato corrente. I tag di sistema
-     * (EXPLICIT, NEW_RELEASE) sono mostrati ma non cliccabili.
-     *
      * @param track La traccia di cui visualizzare i tag.
      * @return Un HBox con le icone dei tag, pronto per essere inserito nella cella.
      */
@@ -208,7 +193,6 @@ public class TrackLibraryViewController implements TrackLibraryObserver {
         HBox box = new HBox(6);
         box.setAlignment(Pos.CENTER_LEFT);
 
-        // Tag manuale: FAVOURITE (cuore)
         Label favIcon = new Label(track.getTagSet().hasTag(Tag.FAVOURITE) ? "♥" : "♡");
         favIcon.setStyle("-fx-font-size: 14px; -fx-cursor: hand; -fx-text-fill: #FF4C30;");
         favIcon.setOnMouseClicked(e -> {
@@ -221,7 +205,6 @@ public class TrackLibraryViewController implements TrackLibraryObserver {
         });
         box.getChildren().add(favIcon);
 
-        // Tag di sistema: EXPLICIT
         if (track.getTagSet().hasTag(Tag.EXPLICIT)) {
             Label explicitIcon = new Label("E");
             explicitIcon.setStyle("-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #FFFFFF; "
@@ -229,7 +212,6 @@ public class TrackLibraryViewController implements TrackLibraryObserver {
             box.getChildren().add(explicitIcon);
         }
 
-        // Tag di sistema: NEW_RELEASE
         if (track.getTagSet().hasTag(Tag.NEW_RELEASE)) {
             Label newIcon = new Label("NEW");
             newIcon.setStyle("-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #FFFFFF; "
@@ -242,8 +224,6 @@ public class TrackLibraryViewController implements TrackLibraryObserver {
 
     /**
      * @brief Forza il ridisegno delle righe per aggiornare l'icona ▶ sulla traccia corrente.
-     * @details Chiamato ad ogni notifica Observer del PlaybackState, funziona sia
-     *          in modalità sequenziale che shuffle.
      */
     private void refreshTrackIcons() {
         if (trackTable != null) {
@@ -253,7 +233,6 @@ public class TrackLibraryViewController implements TrackLibraryObserver {
 
     /**
      * @brief Configura la colonna "Azioni" per la modalità di navigazione standard.
-     * @details Inserisce dinamicamente in ogni riga i bottoni "Modifica" e "Rimuovi".
      */
     private void setupBrowsingColumn() {
         actionCol.setCellFactory(col -> new TableCell<>() {
@@ -285,7 +264,6 @@ public class TrackLibraryViewController implements TrackLibraryObserver {
 
     /**
      * @brief Configura la colonna "Azioni" per la modalità di selezione (Aggiunta a playlist).
-     * @details Genera un pulsante "+" e controlla se la traccia è già presente nella playlist.
      */
     private void setupSelectionColumn() {
         actionCol.setCellFactory(col -> new TableCell<>() {
@@ -297,11 +275,9 @@ public class TrackLibraryViewController implements TrackLibraryObserver {
                 addBtn.setOnAction(e -> {
                     Track track = getTableView().getItems().get(getIndex());
                     try {
-                        CommandManager.getInstance().execute(
-                        new AddTrackToPlaylistCommand(targetPlaylist, track));
+                        CommandManager.getInstance().execute(new AddTrackToPlaylistCommand(targetPlaylist, track));
                         PlaylistLibrary.getInstance().updatePlaylist(targetPlaylist);
-                       //handleGoBack(null);
-                        navigateBackWithUndo();
+                        navigateBack();
                     } catch (IllegalArgumentException ex) {
                         showError("Cannot add track", ex.getMessage());
                     }
@@ -331,32 +307,23 @@ public class TrackLibraryViewController implements TrackLibraryObserver {
     }
 
     /**
-     * @brief Torna a PlaylistDetails dopo una selezione, segnalando che una traccia è stata aggiunta.
-     * @details Chiama init(playlist, true) per attivare la notifica Undo nella vista di destinazione (ID_16).
+     * @brief Torna a PlaylistDetails dopo una selezione.
      */
-    private void navigateBackWithUndo() {
+    private void navigateBack() {
         prepareForNavigation();
         try {
-            PlaylistDetailsController controller =
-                App.setRootAndGetController("playlist/PlaylistDetails");
-            controller.init(targetPlaylist, true);
+            PlaylistDetailsController controller = App.setRootAndGetController("playlist/PlaylistDetails");
+            controller.init(targetPlaylist, false); 
         } catch (IOException e) {
             showError("Navigation Error", "Could not navigate to the previous view.");
         }
     }
 
-    /**
-     * @brief Metodo richiamato dall'Observer quando viene inserita una nuova traccia.
-     * @param track La nuova traccia aggiunta alla TrackLibrary.
-     */
     @Override
     public void onTrackAdded(Track track) {
         onLibraryChanged();
     }
 
-    /**
-     * @brief Metodo richiamato dall'Observer per aggiornare l'intera tabella.
-     */
     @Override
     public void onLibraryChanged() {
         if (trackTable != null) {
@@ -372,14 +339,7 @@ public class TrackLibraryViewController implements TrackLibraryObserver {
         }
     }
 
-    /**
-     * @brief Gestisce le operazioni di pulizia della memoria prima del cambio scena.
-     * @details Ferma il timeline del countdown Undo se attivo.
-     */
     private void prepareForNavigation() {
-        if (undoTimeline != null) {
-        undoTimeline.stop();
-        }
         this.library.removeObserver(this);
         this.playbackState.removeObserver(state -> refreshTrackIcons());
         if (mediaPlayerController != null) {
@@ -387,16 +347,9 @@ public class TrackLibraryViewController implements TrackLibraryObserver {
         }
     }
 
-    /**
-     * @brief Genera e apre la finestra di dialogo modale per la creazione di una nuova traccia.
-     * @param event L'evento di click sul pulsante "Aggiungi Traccia".
-     */
     @FXML
     private void handleAddTrack(ActionEvent event) {
         try {
-
-            int sizeBeforeDialog = library.getTracks().size();
-
             FXMLLoader loader = new FXMLLoader(App.class.getResource("/it/unisa/diem/sad_gruppo6/view/library/TrackCreationDialog.fxml"));
             Parent root = loader.load();
 
@@ -409,10 +362,6 @@ public class TrackLibraryViewController implements TrackLibraryObserver {
             scene.setFill(javafx.scene.paint.Color.TRANSPARENT); 
             dialogStage.setScene(scene);
             dialogStage.showAndWait(); 
-
-            if (library.getTracks().size() > sizeBeforeDialog) {
-            showUndoNotification("Track added to library.");
-            }
             
         } catch (IOException e) {
             showError("UI Error", "Could not load the track creation dialog.");
@@ -420,10 +369,6 @@ public class TrackLibraryViewController implements TrackLibraryObserver {
         }
     }
 
-    /**
-     * @brief Genera e apre la finestra di dialogo modale per la modifica di una traccia esistente.
-     * @param track La traccia da modificare passata in ingresso al controller del popup.
-     */
     private void handleEditButtonClick(Track track) {
         if (track == null) return;
         
@@ -451,9 +396,7 @@ public class TrackLibraryViewController implements TrackLibraryObserver {
             dialogStage.showAndWait(); 
             onLibraryChanged();
             
-            // GESTIONE INTELLIGENTE DEL RIAVVIO
             if (isPlaying && trackIndexBefore != -1) {
-
                 if (trackIndexBefore < library.getTracks().size()) {
                     Track updatedTrack = library.getTracks().get(trackIndexBefore);
                     String newMp3Path = updatedTrack.getPath();
@@ -474,11 +417,6 @@ public class TrackLibraryViewController implements TrackLibraryObserver {
         }
     }
 
-    /**
-     * @brief Riconduce l'utente alla schermata di navigazione precedente.
-     * @details Se è in modalità selezione, torna alla playlist passando un solo parametro a init().
-     * @param event L'evento generato dal click sul pulsante "Indietro".
-     */
     @FXML
     private void handleGoBack(ActionEvent event) {
         prepareForNavigation();
@@ -495,10 +433,6 @@ public class TrackLibraryViewController implements TrackLibraryObserver {
         }
     }
 
-    /**
-     * @brief Mostra il prompt di conferma ed esegue il pattern Command per rimuovere un brano.
-     * @param track L'oggetto Track da rimuovere definitivamente.
-     */
     private void handleDeleteButtonClick(Track track) {
         if (track == null) return;
         
@@ -512,71 +446,15 @@ public class TrackLibraryViewController implements TrackLibraryObserver {
             if (response == ButtonType.OK) {
                 String genre = track.getGenre();
                 int year = track.getYear();
+                
                 CommandManager.getInstance().execute(new RemoveTrackFromLibraryCommand(track));
                 playlistController.removeGenrePlaylistIfEmpty(genre);
                 playlistController.removeYearPlaylistIfEmpty(year);
                 playbackController.handleTrackRemoved(track);
-                showUndoNotification("\"" + track.getTitle() + "\" removed from library.");
             }
         });
     }
 
-    /**
-     * Mostra il pannello di notifica con un countdown per annullare l'aggiunta della traccia alla libreria delle tracce.
-     * Avvia un Timeline JavaFX da 10 secondi. Allo scadere dei 10 secondi: nasconde la notifica senza invocare undo().
-     * Se l'utente clicca "Annulla", viene invocato CommandManager.undo() e la notifica scompare.
-     * 
-     * @param message Il testo descrittivo mostrato nel banner.
-     */
-    private void showUndoNotification(String message){
-        if (undoTimeline != null) {
-        undoTimeline.stop();
-    }
-
-    undoMessageLabel.setText(message);
-    undoNotificationBar.setVisible(true);
-    undoNotificationBar.setManaged(true);
-
-    final int[] secondsLeft = {10};
-    undoCountdownLabel.setText(String.valueOf(secondsLeft[0]));
-
-    undoTimeline = new Timeline(
-        new KeyFrame(Duration.seconds(1), e -> {
-            secondsLeft[0]--;
-            undoCountdownLabel.setText(String.valueOf(secondsLeft[0]));
-
-            // Scaduto il tempo: l'operazione diventa permanente
-            if (secondsLeft[0] <= 0) {
-                undoTimeline.stop();
-                undoNotificationBar.setVisible(false);
-                undoNotificationBar.setManaged(false);
-            }
-        })
-    );
-    undoTimeline.setCycleCount(10);
-    undoTimeline.play();
-    }
-
-
-    /**
-     * Handler del pulsante "Annulla" nella notifica.
-     */
-    @FXML
-    private void handleUndo(){
-        if (undoTimeline != null) {
-                undoTimeline.stop();
-            }
-            undoNotificationBar.setVisible(false);
-            undoNotificationBar.setManaged(false);
-            CommandManager.getInstance().undo();
-    }
-
-
-    /**
-     * @brief Helper utility per mostrare messaggi di errore a schermo in formato modale.
-     * @param title Intestazione principale del popup.
-     * @param message Descrizione dettagliata dell'errore.
-     */
     private void showError(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR, message, ButtonType.OK);
         alert.setTitle("Error");

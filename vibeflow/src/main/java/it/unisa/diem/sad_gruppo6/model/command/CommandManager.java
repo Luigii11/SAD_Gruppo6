@@ -17,6 +17,8 @@ public class CommandManager
     private static CommandManager instance;
     private Stack<AppCommand> history;
 
+    private static final int MAX_HISTORY = 5;
+
     /**
      * Costruttore privato: impedisce l'instanziazione diretta dall'esterno, garantendo il rispetto del pattern Singleton.
      * 
@@ -49,6 +51,9 @@ public class CommandManager
     public void execute(AppCommand command) 
     {
         command.execute();
+        if (history.size() >= MAX_HISTORY) {
+            history.remove(0); 
+        }
         history.push(command);
     }
 
