@@ -24,6 +24,7 @@ import org.junit.jupiter.api.Test;
 import it.unisa.diem.sad_gruppo6.controller.business.playlist.PlaylistController;
 import it.unisa.diem.sad_gruppo6.model.command.CommandManager;
 import it.unisa.diem.sad_gruppo6.model.command.RenamePlaylistCommand;
+import it.unisa.diem.sad_gruppo6.model.domain.ConcretePlaylist;
 import it.unisa.diem.sad_gruppo6.model.domain.Playlist;
 import it.unisa.diem.sad_gruppo6.model.library.PlaylistLibrary;
 import it.unisa.diem.sad_gruppo6.model.library.TrackLibrary;
@@ -52,9 +53,9 @@ public class RenamePlaylistTest {
             CommandManager.getInstance()
         );
 
-        userPlaylist  = new Playlist("Rock Anni 80", false);
-        otherPlaylist = new Playlist("Jazz Moderno", false);
-        autoPlaylist  = new Playlist("Auto - Pop", true);
+        userPlaylist  = new ConcretePlaylist("Rock Anni 80", false);
+        otherPlaylist = new ConcretePlaylist("Jazz Moderno", false);
+        autoPlaylist  = new ConcretePlaylist("Auto - Pop", true);
 
         playlistLibrary.addPlaylist(userPlaylist);
         playlistLibrary.addPlaylist(otherPlaylist);

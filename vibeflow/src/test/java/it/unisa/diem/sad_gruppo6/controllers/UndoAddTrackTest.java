@@ -27,6 +27,7 @@ import org.junit.jupiter.api.Test;
 import it.unisa.diem.sad_gruppo6.model.command.AddTrackToLibraryCommand;
 import it.unisa.diem.sad_gruppo6.model.command.AddTrackToPlaylistCommand;
 import it.unisa.diem.sad_gruppo6.model.command.CommandManager;
+import it.unisa.diem.sad_gruppo6.model.domain.ConcretePlaylist;
 import it.unisa.diem.sad_gruppo6.model.domain.Playlist;
 import it.unisa.diem.sad_gruppo6.model.domain.Track;
 import it.unisa.diem.sad_gruppo6.model.library.PlaylistLibrary;
@@ -62,7 +63,7 @@ public class UndoAddTrackTest {
         historyField.setAccessible(true);
         ((java.util.Stack<?>) historyField.get(testCommandManager)).clear();
 
-        currentPlaylist = new Playlist("Test Playlist", false);
+        currentPlaylist = new ConcretePlaylist("Test Playlist", false);
         testPlaylistLibrary.addPlaylist(currentPlaylist);
 
        File fA = File.createTempFile("trackA_", ".mp3"); 

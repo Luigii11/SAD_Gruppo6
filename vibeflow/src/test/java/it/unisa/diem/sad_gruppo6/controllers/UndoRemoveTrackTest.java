@@ -28,6 +28,7 @@ import org.junit.jupiter.api.Test;
 import it.unisa.diem.sad_gruppo6.model.command.CommandManager;
 import it.unisa.diem.sad_gruppo6.model.command.RemoveTrackFromLibraryCommand;
 import it.unisa.diem.sad_gruppo6.model.command.RemoveTrackFromPlaylistCommand;
+import it.unisa.diem.sad_gruppo6.model.domain.ConcretePlaylist;
 import it.unisa.diem.sad_gruppo6.model.domain.Playlist;
 import it.unisa.diem.sad_gruppo6.model.domain.Track;
 import it.unisa.diem.sad_gruppo6.model.library.PlaylistLibrary;
@@ -76,7 +77,7 @@ public class UndoRemoveTrackTest {
         testLibrary.addTrack(trackA);
         testLibrary.addTrack(trackB);
 
-        currentPlaylist = new Playlist("Test Playlist", false);
+        currentPlaylist = new ConcretePlaylist("Test Playlist", false);
         testPlaylistLibrary.addPlaylist(currentPlaylist);
         currentPlaylist.addTrack(trackA);
     }
