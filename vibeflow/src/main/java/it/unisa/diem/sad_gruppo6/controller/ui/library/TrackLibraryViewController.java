@@ -105,7 +105,9 @@ public class TrackLibraryViewController implements TrackLibraryObserver {
                     try {
                         playbackController.play(library.getTracks(), selectedTrack);
                     } catch (FileNotFoundException e) {
-                        e.printStackTrace();
+                        playbackController.stop();
+                        showError("File non trovato",
+                            "Il file audio di \"" + selectedTrack.getTitle() + "\" non è più presente nel percorso originale.");
                     }
                 }
             }

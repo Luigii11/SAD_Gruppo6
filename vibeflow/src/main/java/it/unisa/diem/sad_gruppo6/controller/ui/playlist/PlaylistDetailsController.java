@@ -113,8 +113,9 @@ public class PlaylistDetailsController implements PlaylistLibraryObserver, Playb
                     try {
                         playbackController.play(currentPlaylist.getTracks(), selectedTrack);
                     } catch (FileNotFoundException e) {
-                        showAlert(AlertType.ERROR, "File Not Found", 
-                            "The track is no longer available at the original file location.");
+                        playbackController.stop();
+                        showAlert(AlertType.ERROR, "File non trovato",
+                            "Il file audio di \"" + selectedTrack.getTitle() + "\" non è più presente nel percorso originale.");
                     }
                 }
             }
@@ -349,8 +350,9 @@ public class PlaylistDetailsController implements PlaylistLibraryObserver, Playb
             } catch (IllegalArgumentException e) {
                 showAlert(AlertType.ERROR, "Playback Error", e.getMessage());
             } catch (FileNotFoundException e) {
-                showAlert(AlertType.ERROR, "File Not Found", 
-                    "The track is no longer available at the original file location.");
+                playbackController.stop();
+                showAlert(AlertType.ERROR, "File non trovato",
+                    "Il file audio non è più presente nel percorso originale.");
             }
         }
     }

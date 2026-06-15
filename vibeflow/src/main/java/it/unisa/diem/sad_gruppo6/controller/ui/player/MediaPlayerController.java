@@ -10,6 +10,7 @@ package it.unisa.diem.sad_gruppo6.controller.ui.player;
 import java.io.FileNotFoundException;
 
 import it.unisa.diem.sad_gruppo6.controller.business.playback.PlaybackController;
+import it.unisa.diem.sad_gruppo6.controller.ui.utils.DialogUtils;
 import it.unisa.diem.sad_gruppo6.model.domain.Track;
 import it.unisa.diem.sad_gruppo6.model.playback.states.PlaybackObserver;
 import it.unisa.diem.sad_gruppo6.model.playback.states.PlaybackState;
@@ -18,6 +19,9 @@ import it.unisa.diem.sad_gruppo6.model.playback.strategies.SequentialMode;
 import it.unisa.diem.sad_gruppo6.model.playback.strategies.ShuffleMode;
 import it.unisa.diem.sad_gruppo6.model.playback.strategies.LoopMode;
 import it.unisa.diem.sad_gruppo6.model.domain.Tag;
+import it.unisa.diem.sad_gruppo6.model.service.PlaybackService;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
 import javafx.scene.layout.HBox;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -55,6 +59,12 @@ public class MediaPlayerController implements PlaybackObserver {
             if (playbackState.getCurrentTrack() != null) {
                 playbackController.seekTo((int) progressBar.getValue());
             }
+        });
+
+        PlaybackService.getInstance().setOnFileNotFound(() -> {
+            Track failedTrack = playbackState.getCurrentTrack();
+            playbackController.stop();
+            showFileNotFoundAlert(failedTrack);
         });
 
         refreshUI();
@@ -133,13 +143,32 @@ public class MediaPlayerController implements PlaybackObserver {
         try {
             playbackController.next();
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            Track failedTrack = playbackState.getCurrentTrack();
+            playbackController.stop();
+            showFileNotFoundAlert(failedTrack);
         }
     }
 
     @FXML
-    private void handlePrevious(ActionEvent event) throws FileNotFoundException {
-        playbackController.previous();
+    private void handlePrevious(ActionEvent event) {
+        try {
+            playbackController.previous();
+        } catch (FileNotFoundException e) {
+            Track failedTrack = playbackState.getCurrentTrack();
+            playbackController.stop();
+            showFileNotFoundAlert(failedTrack);
+        }
+    }
+
+    private void showFileNotFoundAlert(Track track) {
+        String trackName = (track != null) ? track.getTitle() : "sconosciuta";
+        Alert alert = new Alert(Alert.AlertType.ERROR,
+                "The audio file \"" + trackName + "\" is not present in the original path",
+                ButtonType.OK);
+        alert.setTitle("File not found");
+        alert.setHeaderText("Unavailable track");
+        DialogUtils.personalizza(alert, playPauseButton, "❌", "#FF4C30");
+        alert.showAndWait();
     }
 
     /**

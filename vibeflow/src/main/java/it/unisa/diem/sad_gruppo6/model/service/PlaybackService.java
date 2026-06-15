@@ -21,6 +21,7 @@ import java.io.FileNotFoundException;
 
 import it.unisa.diem.sad_gruppo6.model.domain.Track;
 import it.unisa.diem.sad_gruppo6.model.playback.states.PlaybackState;
+import javafx.application.Platform;
 import javafx.scene.media.MediaPlayer;
 import javafx.scene.media.Media;
 
@@ -31,6 +32,7 @@ public class PlaybackService {
     private Track currentTrack;
     private static PlaybackService instance;
     private MediaPlayer player;
+    private Runnable onFileNotFoundCallback;
 
     /**
      * @brief Costruttore privato per implementare il pattern Singleton. 
@@ -75,6 +77,8 @@ public class PlaybackService {
         String play = filepath.toURI().toString();
         Media playbleSong = new Media(play);
         player = new MediaPlayer(playbleSong);
+
+        player.setOnError(() -> notifyFileNotFound());
 
         player.currentTimeProperty().addListener((obs, oldTime, newTime) -> {
             int seconds = (int) newTime.toSeconds();
@@ -128,6 +132,16 @@ public class PlaybackService {
         if (player != null)
         {
             player.setOnEndOfMedia(callback);
+        }
+    }
+
+    public void setOnFileNotFound(Runnable callback) {
+        this.onFileNotFoundCallback = callback;
+    }
+
+    public void notifyFileNotFound() {
+        if (onFileNotFoundCallback != null) {
+            Platform.runLater(onFileNotFoundCallback);
         }
     }
 

@@ -276,7 +276,8 @@ public class PlaybackController {
                 playbackService.start();
                 playbackService.setOnEndOfTrack(() -> onTrackEnded());
             } catch (FileNotFoundException e) {
-                System.err.println("Impossibile riprodurre la traccia: " + e.getMessage());
+                stop();
+                playbackService.notifyFileNotFound();
             }
         }
     }
