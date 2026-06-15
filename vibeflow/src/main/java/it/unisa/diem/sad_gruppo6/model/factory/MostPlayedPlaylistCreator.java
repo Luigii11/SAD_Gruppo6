@@ -13,6 +13,7 @@
 
 package it.unisa.diem.sad_gruppo6.model.factory;
 
+import it.unisa.diem.sad_gruppo6.model.domain.ConcretePlaylist;
 import it.unisa.diem.sad_gruppo6.model.domain.Playlist;
 import it.unisa.diem.sad_gruppo6.model.domain.Track;
 
@@ -42,7 +43,7 @@ public class MostPlayedPlaylistCreator extends PlaylistCreator {
             return null;
         }
 
-        Playlist playlist = new Playlist(PLAYLIST_NAME, true);
+        Playlist playlist = new ConcretePlaylist(PLAYLIST_NAME, true);
         for (Track t : mostPlayed) {
             playlist.addTrack(t);
         }

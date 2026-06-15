@@ -14,6 +14,7 @@ import it.unisa.diem.sad_gruppo6.model.command.CreatePlaylistCommand;
 import it.unisa.diem.sad_gruppo6.model.command.RenamePlaylistCommand;
 import it.unisa.diem.sad_gruppo6.model.command.ReorderTrackCommand;
 import it.unisa.diem.sad_gruppo6.model.command.RemoveTrackFromPlaylistCommand;
+import it.unisa.diem.sad_gruppo6.model.domain.ConcretePlaylist;
 import it.unisa.diem.sad_gruppo6.model.domain.Playlist;
 import it.unisa.diem.sad_gruppo6.model.domain.Track;
 import it.unisa.diem.sad_gruppo6.model.library.PlaylistLibrary;
@@ -62,7 +63,7 @@ public class PlaylistController {
             }
         }
 
-        Playlist newPlaylist = new Playlist(trimmedName, false);
+        Playlist newPlaylist = new ConcretePlaylist(trimmedName, false);
         AppCommand command = new CreatePlaylistCommand(playlistLibrary, newPlaylist);
         commandManager.execute(command);
     }

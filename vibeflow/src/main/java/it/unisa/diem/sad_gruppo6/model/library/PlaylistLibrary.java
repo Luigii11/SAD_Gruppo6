@@ -12,7 +12,7 @@ import it.unisa.diem.sad_gruppo6.model.domain.Playlist;
 
 import java.util.ArrayList;
 
-public class PlaylistLibrary {
+public class PlaylistLibrary implements PlaylistLibrarySubject {
 
     // Attributi
     private static PlaylistLibrary instance;
@@ -136,7 +136,7 @@ public class PlaylistLibrary {
      * Notifica tutti gli observer registrati che è avvenuto un cambiamento 
      * (aggiunta, rimozione o aggiornamento di una playlist), scatenando l'aggiornamento della UI.
      */
-    private void notifyObservers() {
+    public void notifyObservers() {
         for (PlaylistLibraryObserver observer : observers) {
             observer.onPlaylistLibraryChanged();
         }

@@ -13,7 +13,7 @@ import java.util.List;
 
 import it.unisa.diem.sad_gruppo6.model.domain.Track;
 
-public class TrackLibrary 
+public class TrackLibrary implements TrackLibrarySubject
 {
 
     private static TrackLibrary instance;
@@ -60,7 +60,7 @@ public class TrackLibrary
         {
             tracks.add(track);
             notifyTrackAdded(track);
-            notifyObserver();
+            notifyObservers();
         }
         return;
 
@@ -117,9 +117,9 @@ public class TrackLibrary
      * aggiornare le loro viste di conseguenza.
      * 
      */
-    private void notifyObserver()
+    public void notifyObservers()
     {
-    for (TrackLibraryObserver observer : observers) 
+    for (TrackLibraryObserver observer : observers)
             {
                 observer.onLibraryChanged();
             }
@@ -161,7 +161,7 @@ public class TrackLibrary
             throw new IllegalArgumentException("La traccia da rimuovere non è presente in libreria.");
         }
         tracks.remove(track);
-        notifyObserver();
+        notifyObservers();
     }
 
 
@@ -180,7 +180,7 @@ public class TrackLibrary
         list.add(safeIndex, track);
         tracks = new LinkedHashSet<>(list);
         notifyTrackAdded(track);
-        notifyObserver();
+        notifyObservers();
     }
 
     /**
@@ -194,7 +194,7 @@ public class TrackLibrary
      */
     public void notifyTrackUpdated(Track track)
     {
-        notifyObserver();
+        notifyObservers();
     }
   
 }

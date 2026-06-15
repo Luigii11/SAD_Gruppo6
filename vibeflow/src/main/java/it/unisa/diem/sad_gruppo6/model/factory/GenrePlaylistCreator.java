@@ -17,6 +17,7 @@
  */
 package it.unisa.diem.sad_gruppo6.model.factory;
 
+import it.unisa.diem.sad_gruppo6.model.domain.ConcretePlaylist;
 import it.unisa.diem.sad_gruppo6.model.domain.Playlist;
 import it.unisa.diem.sad_gruppo6.model.domain.Track;
 
@@ -57,7 +58,7 @@ public class GenrePlaylistCreator extends PlaylistCreator {
      */
     @Override
     public Playlist createPlaylist(List<Track> tracks) {
-        Playlist playlist = new Playlist(genre, true);
+        Playlist playlist = new ConcretePlaylist(genre, true);
 
         for (Track t : tracks) {
             if (t.getGenre() != null && t.getGenre().equalsIgnoreCase(genre)) {

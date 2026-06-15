@@ -26,7 +26,7 @@ import it.unisa.diem.sad_gruppo6.model.service.PlaybackService;
 import java.util.List;
 import java.util.ArrayList;
 
-public class PlaybackState {
+public class PlaybackState implements PlaybackSubject {
 
     /* Attributi */
     private static PlaybackState instance;
@@ -269,7 +269,7 @@ public class PlaybackState {
      * * Itera sulla lista degli observer e chiama il loro metodo update().
      * @pattern Observer
      */
-    private void notifyObservers() {
+    public void notifyObservers() {
         for (PlaybackObserver o : observers) {
             o.update(this);
         }

@@ -82,14 +82,16 @@ public class PlaybackController {
      * @param startTrack La traccia da cui iniziare l'ascolto.
      * @throws FileNotFoundException Se il file audio della traccia non esiste.
      */
-    public void play(Playlist p, Track startTrack) throws FileNotFoundException 
+    public void play(Playlist p, Track startTrack) throws FileNotFoundException
     {
-        if (p == null || p.getTracks().isEmpty()) 
+        if (p == null || p.getTracks().isEmpty())
             {
                 throw new IllegalArgumentException("Empty playlist, impossible to play.");
             }
-        play(p.getTracks(), startTrack);        
-        playbackState.setCurrentPlaylist(p);    
+        playbackState.setCurrentPlaylist(p);
+        playbackState.setCurrentTrackList(p.getTracks());
+        playbackState.setIterator(p.createIterator(playbackState.getMode(), startTrack));
+        startPlayback(startTrack);
     }
 
     public void handleTrackRemoved(Track t) 
@@ -261,7 +263,10 @@ public class PlaybackController {
         Track currentTrack = playbackState.getCurrentTrack();
 
         if (tracks != null && !tracks.isEmpty()) {
-            PlaylistIterator newIterator = mode.getIterator(tracks, currentTrack);
+            Playlist currentPlaylist = playbackState.getCurrentPlaylist();
+            PlaylistIterator newIterator = (currentPlaylist != null)
+                ? currentPlaylist.createIterator(mode, currentTrack)
+                : mode.getIterator(tracks, currentTrack);
             playbackState.setIterator(newIterator);
         }
     }

@@ -19,6 +19,7 @@
  */
 package it.unisa.diem.sad_gruppo6.model.factory;
 
+import it.unisa.diem.sad_gruppo6.model.domain.ConcretePlaylist;
 import it.unisa.diem.sad_gruppo6.model.domain.Playlist;
 import it.unisa.diem.sad_gruppo6.model.domain.Track;
 
@@ -58,7 +59,7 @@ public class YearPlaylistCreator extends PlaylistCreator {
     @Override
     public Playlist createPlaylist(List<Track> tracks) {
         String name = decadeStart + "-" + (decadeStart + 9);
-        Playlist playlist = new Playlist(name, true);
+        Playlist playlist = new ConcretePlaylist(name, true);
 
         for (Track t : tracks) {
             if (t.getYear() >= decadeStart && t.getYear() <= decadeStart + 9) {

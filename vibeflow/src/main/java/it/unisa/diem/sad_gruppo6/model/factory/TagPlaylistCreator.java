@@ -21,6 +21,7 @@
  */
 package it.unisa.diem.sad_gruppo6.model.factory;
 
+import it.unisa.diem.sad_gruppo6.model.domain.ConcretePlaylist;
 import it.unisa.diem.sad_gruppo6.model.domain.Playlist;
 import it.unisa.diem.sad_gruppo6.model.domain.Tag;
 import it.unisa.diem.sad_gruppo6.model.domain.Track;
@@ -61,7 +62,7 @@ public class TagPlaylistCreator extends PlaylistCreator {
      */
     @Override
     public Playlist createPlaylist(List<Track> tracks) {
-        Playlist playlist = new Playlist(tag.name(), true);
+        Playlist playlist = new ConcretePlaylist(tag.name(), true);
 
         for (Track t : tracks) {
             if (t.getTagSet().hasTag(tag)) {
