@@ -179,4 +179,22 @@ public class TrackControllerEditTest {
         assertEquals(1, testLibrary.getTracks().size());
         assertEquals(TEST_TRACK_PATH_1, testLibrary.getTracks().get(0).getPath());
     }
+
+    /**
+     * Testa che dopo edit + undo la libreria rifletta di nuovo i metadati originali.
+     */
+    @Test
+    public void testEditTrackUndoRestoresOriginal() {
+        testController.editTrack(
+            existingTrack, "We Will Rock You", "Queen", "Rock", 1977, TEST_TRACK_PATH_2
+        );
+
+        testCommandManager.undo();
+
+        assertEquals(1, testLibrary.getTracks().size());
+        Track restored = testLibrary.getTracks().get(0);
+        assertEquals("Bohemian Rhapsody", restored.getTitle());
+        assertEquals(TEST_TRACK_PATH_1, restored.getPath());
+        assertEquals(1975, restored.getYear());
+    }
 }
