@@ -16,6 +16,7 @@ package it.unisa.diem.sad_gruppo6.model.command;
 
 import it.unisa.diem.sad_gruppo6.model.domain.Playlist;
 import it.unisa.diem.sad_gruppo6.model.domain.Track;
+import it.unisa.diem.sad_gruppo6.model.library.PlaylistLibrary;
 
 public class AddTrackToPlaylistCommand implements AppCommand {
 
@@ -41,6 +42,7 @@ public class AddTrackToPlaylistCommand implements AppCommand {
     @Override
     public void execute() {
         playlist.addTrack(track);
+        PlaylistLibrary.getInstance().updatePlaylist(playlist);
         
     }
 
@@ -50,6 +52,6 @@ public class AddTrackToPlaylistCommand implements AppCommand {
     @Override
     public void undo(){
         playlist.removeTrack(track);
-
+        PlaylistLibrary.getInstance().updatePlaylist(playlist);
     }
 }

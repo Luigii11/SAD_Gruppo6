@@ -16,6 +16,7 @@ package it.unisa.diem.sad_gruppo6.model.command;
 
 import it.unisa.diem.sad_gruppo6.model.domain.Playlist;
 import it.unisa.diem.sad_gruppo6.model.domain.Track;
+import it.unisa.diem.sad_gruppo6.model.library.PlaylistLibrary;
 
 public class RemoveTrackFromPlaylistCommand implements AppCommand {
 
@@ -47,6 +48,7 @@ public class RemoveTrackFromPlaylistCommand implements AppCommand {
         if (playlist.getTracks().contains(track)) {
             playlist.getTracks().remove(track);
         }
+        PlaylistLibrary.getInstance().updatePlaylist(playlist);
     }
      /**
      * Annulla la rimozione reinserendo la traccia nella posizione originale.
@@ -55,6 +57,8 @@ public class RemoveTrackFromPlaylistCommand implements AppCommand {
     public void undo() {
         int safeIndex = Math.max(0, Math.min(originalIndex, playlist.getTracks().size()));
         playlist.getTracks().add(safeIndex, track);
+        PlaylistLibrary.getInstance().updatePlaylist(playlist);
     }
+    
 }
 

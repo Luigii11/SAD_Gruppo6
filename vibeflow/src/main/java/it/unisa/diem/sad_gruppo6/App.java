@@ -5,6 +5,9 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
 import javafx.stage.Stage;
 import java.io.IOException;
 import java.util.Locale;
@@ -29,6 +32,13 @@ public class App extends Application {
                 System.out.println("Nota: Impossibile caricare l'icona della finestra: " + e.getMessage());
             }
             stage.setScene(scene);
+
+            KeyCombination ctrlZ = new KeyCodeCombination(KeyCode.Z, KeyCombination.SHORTCUT_DOWN);
+            scene.getAccelerators().put(ctrlZ, () -> {
+                it.unisa.diem.sad_gruppo6.model.command.CommandManager.getInstance().undo();
+                System.out.println("Azione annullata tramite scorciatoia da tastiera (Ctrl+Z).");
+            });
+            
             stage.show();
         } catch (IOException e) {
             System.out.println("Errore nel caricamento del file FXML: " + e.getMessage());

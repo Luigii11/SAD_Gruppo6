@@ -6,7 +6,10 @@
 <?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.Tooltip?>
 <?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
@@ -22,23 +25,27 @@
                 
                 <HBox alignment="CENTER_LEFT">
                     <children>
-                        <Button mnemonicParsing="false" onAction="#handleGoBack" styleClass="home-back-btn" text="🏠" />
-                    </children>
-                </HBox>
-
-                <HBox alignment="CENTER_LEFT" spacing="20.0">
-                    <children>
-                        <VBox spacing="8.0" HBox.hgrow="ALWAYS">
+                        
+                        <GridPane hgap="20.0" vgap="2.0">
+                            <columnConstraints>
+                                <ColumnConstraints halignment="CENTER" hgrow="NEVER" />
+                                <ColumnConstraints hgrow="ALWAYS" />
+                            </columnConstraints>
                             <children>
-                                <HBox alignment="CENTER_LEFT" spacing="15.0">
-                                    <children>
-                                        <Label styleClass="header-icon-label" text="♫" />
-                                        <Label fx:id="playlistNameLabel" styleClass="brand-title" text="PLAYLIST NAME" />
-                                    </children>
-                                </HBox>
-                                <Label fx:id="trackCountLabel" styleClass="card-menu-btn" text="Tracks: 0" />
+                                
+                                <Button GridPane.columnIndex="0" GridPane.rowIndex="0" mnemonicParsing="false" onAction="#handleGoBack" styleClass="home-back-btn" text="←">
+                                    <tooltip>
+                                        <Tooltip text="Go back" />
+                                    </tooltip>
+                                </Button>
+                                
+                                <Label fx:id="playlistNameLabel" GridPane.columnIndex="1" GridPane.rowIndex="0" styleClass="brand-title" text="PLAYLIST NAME" />
+                                
+                                <Label fx:id="trackCountLabel" GridPane.columnIndex="1" GridPane.rowIndex="1" styleClass="card-menu-btn" text="Tracks: 0" />
+                                
                             </children>
-                        </VBox>
+                        </GridPane>
+                        
                         <Region HBox.hgrow="ALWAYS" />
                         
                         <VBox alignment="CENTER" spacing="8.0">
@@ -52,17 +59,11 @@
                                 </HBox>
                             </children>
                         </VBox>
+                        
                     </children>
                 </HBox>
 
                 <Separator styleClass="content-separator" />
-
-                <HBox fx:id="undoNotificationBar" alignment="CENTER_LEFT" spacing="15.0" styleClass="undo-notification-bar" visible="false" managed="false">
-                    <Label fx:id="undoMessageLabel" styleClass="undo-notification-label" text="Track added to playlist." />
-                    <Region HBox.hgrow="ALWAYS" />
-                    <Label fx:id="undoCountdownLabel" styleClass="undo-countdown-label" text="10" />
-                    <Button fx:id="undoCancelButton" mnemonicParsing="false" onAction="#handleUndo" styleClass="undo-cancel-btn" text="Undo" />
-                </HBox>
 
                 <VBox spacing="12.0" VBox.vgrow="ALWAYS">
                     <children>

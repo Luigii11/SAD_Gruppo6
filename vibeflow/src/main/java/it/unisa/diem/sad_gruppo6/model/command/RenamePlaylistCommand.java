@@ -50,11 +50,13 @@ public class RenamePlaylistCommand implements AppCommand {
     }
 
     /**
-     * Annulla il comando: ripristina il nome precedente della playlist.
-     * Supporta il meccanismo di undo del {@link CommandManager}.
+     * Operazione di undo non supportata per questo comando.
+     * @throws UnsupportedOperationException Per segnalare che questa operazione non è stata ancora implementata.
      */
+    @Override
     public void undo() {
-        playlist.setName(oldName);
-        playlistLibrary.updatePlaylist(playlist);
+        throw new UnsupportedOperationException(
+            "Undo not supported for " + this.getClass().getSimpleName()
+        );
     }
 }
