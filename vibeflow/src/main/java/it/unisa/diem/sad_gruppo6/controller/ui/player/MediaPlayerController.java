@@ -163,10 +163,10 @@ public class MediaPlayerController implements PlaybackObserver {
     private void showFileNotFoundAlert(Track track) {
         String trackName = (track != null) ? track.getTitle() : "sconosciuta";
         Alert alert = new Alert(Alert.AlertType.ERROR,
-                "The audio file \"" + trackName + "\" is not present in the original path",
+                "Il file audio \"" + trackName + "\" non è presente nel percorso originale",
                 ButtonType.OK);
-        alert.setTitle("File not found");
-        alert.setHeaderText("Unavailable track");
+        alert.setTitle("File non trovato");
+        alert.setHeaderText("Traccia non disponibile");
         DialogUtils.personalizza(alert, playPauseButton, "❌", "#FF4C30");
         alert.showAndWait();
     }
